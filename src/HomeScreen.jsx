@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router";
 
 const VIDEO_SRC =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4";
@@ -52,9 +53,11 @@ function HomeScreen() {
           ))}
         </div>
 
-        <button className="liquid-glass rounded-full px-6 py-2.5 text-sm text-foreground transition-transform duration-300 hover:scale-[1.03]">
-          Begin Journey
-        </button>
+        <Link to="/login">
+          <button className="liquid-glass rounded-full px-6 py-2.5 text-sm text-foreground transition-transform duration-300 hover:scale-[1.03]">
+            Begin Journey
+          </button>
+        </Link>
       </nav>
 
       {/* Hero Section */}
@@ -72,9 +75,11 @@ function HomeScreen() {
           Turn your notes into an intelligent knowledge base. Ask questions
           naturally and get accurate answers from everything you've written
         </p>
-        <button className="liquid-glass rounded-full px-6 py-2.5 text-sm text-foreground transition-transform duration-300 hover:scale-[1.03]">
-          Begin Journey
-        </button>
+        <Link to="/login">
+          <button className="liquid-glass rounded-full px-6 py-2.5 text-sm text-foreground transition-transform duration-300 hover:scale-[1.03]">
+            Begin Journey
+          </button>
+        </Link>
       </section>
     </div>
   );
