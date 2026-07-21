@@ -107,7 +107,7 @@ function LoginScreen() {
               className="animate-fade-rise-delay mt-2 text-sm text-muted-foreground"
             >
               {isSignup
-                ? "Join Velorah and start building in silence."
+                ? "Join Digital Notes and start building in silence."
                 : "Sign in to continue where you left off."}
             </p>
           </div>
