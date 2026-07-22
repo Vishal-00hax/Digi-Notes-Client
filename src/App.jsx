@@ -1,14 +1,15 @@
-import { useEffect } from "react";
 import "./App.css";
 import { Routes, Route, useNavigate } from "react-router";
 import HomeScreen from "./HomeScreen";
 import Body from "./Body";
 import DashboardScreen from "../src/components/DashboardScreen";
 import LoginScreen from "./components/LoginScreen";
+import EditNotesForm from "../src/components/EditNotesForm";
 import { Toaster } from "react-hot-toast";
 import api from "../utils/axios";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../utils/userSlice";
+import { useEffect } from "react";
 
 function App() {
   const navigate = useNavigate();
@@ -30,7 +31,6 @@ function App() {
   useEffect(() => {
     getUser();
   }, []);
-
   return (
     <>
       <Toaster />
@@ -39,6 +39,7 @@ function App() {
 
         <Route path="app" element={<Body />}>
           <Route index element={<DashboardScreen />} />
+          <Route path="create-note/:notesId" element={<EditNotesForm />} />
         </Route>
         <Route path="login" element={<LoginScreen />} />
       </Routes>

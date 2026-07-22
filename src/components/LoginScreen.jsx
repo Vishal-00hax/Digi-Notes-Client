@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import api from "../../utils/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addUser } from "../../utils/userSlice";
 
 const VIDEO_SRC =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4";
@@ -20,6 +22,7 @@ function LoginScreen() {
     password: "",
   });
 
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   console.log("FormData:", formData);
@@ -39,6 +42,7 @@ function LoginScreen() {
         email: formData.email,
         password: formData.password,
       });
+      dispatch(addUser(response.data.user));
       toast.success("Signup Successfull");
       navigate("/app");
     } catch (err) {
@@ -54,6 +58,7 @@ function LoginScreen() {
         email: formData.email,
         password: formData.password,
       });
+      dispatch(addUser(response.data.user));
       navigate("/app");
       toast.success("Login Successfull");
     } catch (err) {
