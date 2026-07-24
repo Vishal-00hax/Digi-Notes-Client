@@ -98,3 +98,14 @@ body {
     transform: none;
   }
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-area {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+}

@@ -47,7 +47,7 @@ function LoginScreen() {
       navigate("/app");
     } catch (err) {
       const errText =
-        err.response.message || err.response || "Something went wrong !";
+        err.response?.data?.message || err.message || "Something went wrong!";
       toast.error(errText);
     }
   };
@@ -63,7 +63,7 @@ function LoginScreen() {
       toast.success("Login Successfull");
     } catch (err) {
       const errText =
-        err.response.message || err.response || "Something went wrong !";
+        err.response?.data?.message || err.message || "Something went wrong!";
       toast.error(errText);
     }
   };

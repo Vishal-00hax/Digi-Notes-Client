@@ -1,26 +1,28 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import api from "../../utils/axios";
-import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router";
-import { Link } from "react-router";
 import dayjs from "dayjs";
 import EditNotesForm from "./EditNotesForm";
+import NotesContentForm from "./NotesContentForm";
+import { useNotesSync } from "../../utils/useNotesSync";
+import { useSingleNoteSync } from "../../utils/useSingleNoteSync";
+
+const displayFont = { fontFamily: "'Instrument Serif', serif" };
 
 function DashboardScreen() {
-  const [notes, setNotes] = useState(null);
-  const [isEditingNoteId, setIsEditingNoteId] = useState(false);
-
-  const navigate = useNavigate();
+  const [notes, setNotes] = useState([]);
+  const [isEditingNoteId, setIsEditingNoteId] = useState(null);
+  const [selectedNoteId, setSelectedNoteId] = useState(null);
+  const [selectedNote, setSelectedNote] = useState(null);
+  const [loadingNote, setLoadingNote] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const getUserNotes = async () => {
     try {
       const response = await api.get("/notes/user");
       setNotes(response.data.notes);
     } catch (err) {
-      const errText =
-        err.response.message || err.response || "Something went wrong";
-      toast.error(errText);
+      toast.error(err.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -28,65 +30,132 @@ function DashboardScreen() {
     getUserNotes();
   }, []);
 
+  // Real-time data syncing
+  useNotesSync(setNotes);
+  useSingleNoteSync(selectedNoteId, setSelectedNote);
+
+  // Fetch full note whenever selection changes
+  useEffect(() => {
+    if (!selectedNoteId) {
+      setSelectedNote(null);
+      return;
+    }
+    const getNoteDetails = async () => {
+      setLoadingNote(true);
+      try {
+        const response = await api.get(`/notes/get/${selectedNoteId}`);
+        setSelectedNote(response.data.note);
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Something went wrong");
+      } finally {
+        setLoadingNote(false);
+      }
+    };
+    getNoteDetails();
+  }, [selectedNoteId]);
+
   const handleCreateNotes = async () => {
     try {
       const response = await api.post("/notes/create");
-      await getUserNotes();
       toast.success("New Note Created");
+      if (response.data?.note?._id) {
+        setSelectedNoteId(response.data.note._id);
+      }
     } catch (err) {
-      const errText =
-        err.response.message || err.response || "Something went wrong";
-      toast.error(errText);
+      toast.error(err.response?.data?.message || "Something went wrong");
     }
   };
 
   const handleDelete = async (notesId) => {
     try {
-      const response = await api.delete(`/notes/delete/${notesId}`);
-      await getUserNotes();
+      await api.delete(`/notes/delete/${notesId}`);
       toast.success("Note Deleted");
+      if (selectedNoteId === notesId) setSelectedNoteId(null);
     } catch (err) {
-      const errText =
-        err.response.message || err.response || "Something went wrong";
-      toast.error(errText);
+      toast.error(err.response?.data?.message || "Something went wrong");
     }
   };
 
-  console.log("Notes", notes);
+  const handleNoteChange = (changes) => {
+    setSelectedNote((prev) => ({ ...prev, ...changes }));
+  };
 
-  const displayFont = { fontFamily: "'Instrument Serif', serif" };
+  // Case-insensitive & partial search matching
+  const filterdNotes = notes.filter((not) =>
+    (not.title || "").toLowerCase().includes(searchText.toLowerCase()),
+  );
+
   return (
-    <div className="min-h-screen w-full bg-background px-6 py-12 sm:px-10">
-      <div className="mx-auto max-w-6xl mb-10 flex items-center justify-between">
-        <button
-          onClick={() => handleCreateNotes()}
-          className="liquid-glass rounded-full px-6 py-2.5 text-sm text-foreground transition-transform duration-300 hover:scale-[1.03]"
-        >
-          Create New Note
-        </button>
-      </div>
-      {notes ? (
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {notes.map((not) => {
-            return (
-              <Link key={not._id} to={``}>
-                <div className="liquid-glass group relative rounded-2xl px-6 py-6 transition-transform duration-300 hover:scale-[1.02]">
-                  <p className="text-lg text-foreground" style={displayFont}>
-                    {not.title}
-                  </p>
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    Last Update:{" "}
-                    {dayjs(not.updatedAt).format("DD MMM YYYY , hh:mm A")}
-                  </p>
+    <div className="min-h-screen w-full bg-background px-6 py-10 sm:px-10">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 md:flex-row md:items-start">
+        {/* LEFT — Notes List */}
+        <aside className="flex w-full flex-col gap-4 md:max-w-xs">
+          <button
+            type="button"
+            onClick={handleCreateNotes}
+            className="liquid-glass w-full rounded-full px-6 py-2.5 text-sm text-foreground transition-transform duration-300 hover:scale-[1.02]"
+          >
+            + Create New Note
+          </button>
 
-                  <div className="absolute right-4 top-4 flex items-center gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingNoteId(not._id)}
-                      className="liquid-glass rounded-full px-3 py-1.5 text-xs text-foreground transition-transform duration-300 hover:scale-[1.05]"
+          <div className="liquid-glass flex w-full items-center rounded-full px-6 py-1 transition-all duration-300 hover:scale-[1.02] focus-within:ring-1 focus-within:ring-foreground/30">
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Search Note..."
+              className="w-full bg-transparent py-1.5 text-sm text-foreground placeholder:text-muted-foreground/70 outline-none border-none"
+            />
+          </div>
+
+          {filterdNotes.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {filterdNotes
+                .slice() //.slice() creates a shallow copy, ensuring you sort a fresh array
+                .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+                .map((not) => (
+                  <div
+                    key={not._id}
+                    onClick={() => setSelectedNoteId(not._id)}
+                    className={`liquid-glass group relative cursor-pointer rounded-2xl px-4 py-3 transition-transform duration-300 hover:scale-[1.01] ${
+                      selectedNoteId === not._id
+                        ? "ring-1 ring-foreground/30"
+                        : ""
+                    }`}
+                  >
+                    <p
+                      className="truncate pr-14 text-base text-foreground"
+                      style={displayFont}
                     >
-                      Edit
-                    </button>
+                      {not.title || "Untitled Note"}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {dayjs(not.updatedAt).format("DD MMM YYYY, hh:mm A")}
+                    </p>
+
+                    <div className="absolute right-3 top-3 flex items-center gap-1.5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsEditingNoteId(not._id);
+                        }}
+                        className="rounded-full px-2 py-1 text-[11px] text-muted-foreground transition-colors duration-300 hover:text-foreground"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(not._id);
+                        }}
+                        className="rounded-full px-2 py-1 text-[11px] text-muted-foreground transition-colors duration-300 hover:text-foreground"
+                      >
+                        Delete
+                      </button>
+                    </div>
+
                     {isEditingNoteId === not._id && (
                       <EditNotesForm
                         notesId={not._id}
@@ -94,26 +163,38 @@ function DashboardScreen() {
                         onClose={() => setIsEditingNoteId(null)}
                       />
                     )}
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(not._id)}
-                      className="liquid-glass rounded-full px-3 py-1.5 text-xs text-muted-foreground transition-colors duration-300 hover:scale-[1.05] hover:text-foreground"
-                    >
-                      Delete
-                    </button>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      ) : (
-        <>
-          <div className="mx-auto max-w-6xl liquid-glass rounded-2xl px-8 py-20 text-center">
-            <p className="text-sm text-muted-foreground">Notes not found</p>
-          </div>
-        </>
-      )}
+                ))}
+            </div>
+          ) : (
+            <div className="liquid-glass rounded-2xl px-6 py-14 text-center">
+              <p className="text-sm text-muted-foreground">
+                {searchText ? "No matching notes found" : "No notes yet"}
+              </p>
+            </div>
+          )}
+        </aside>
+
+        {/* RIGHT — Selected Note Content */}
+        <section className="liquid-glass w-full flex-1 rounded-3xl px-6 py-8 sm:px-8">
+          {selectedNote ? (
+            <NotesContentForm data={selectedNote} onChange={handleNoteChange} />
+          ) : (
+            <div className="flex h-full min-h-300px flex-col items-center justify-center text-center">
+              <p className="text-lg text-foreground" style={displayFont}>
+                {loadingNote
+                  ? "Loading note…"
+                  : "Select a note to view it here"}
+              </p>
+              {!loadingNote && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Or create a new one to get started.
+                </p>
+              )}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

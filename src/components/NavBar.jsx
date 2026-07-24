@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import { Link } from "react-router";
+import { disconnectSocket } from "../../utils/socket";
 
 const displayFont = { fontFamily: "'Instrument Serif', serif" };
 
@@ -22,11 +23,12 @@ function NavBar() {
         { withCredentials: true },
       );
       dispatch(removeUser());
+      disconnectSocket();
       navigate("/");
       toast.success(response.data.message || "Logout Successfull");
     } catch (err) {
       const errText =
-        err.response.message || err.response || "Something went wrong";
+        err.response?.data?.message || err.message || "Something went wrong";
       toast.error(errText);
     }
   };

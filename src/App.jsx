@@ -39,7 +39,6 @@ function App() {
 
         <Route path="app" element={<Body />}>
           <Route index element={<DashboardScreen />} />
-          <Route path="create-note/:notesId" element={<EditNotesForm />} />
         </Route>
         <Route path="login" element={<LoginScreen />} />
       </Routes>
