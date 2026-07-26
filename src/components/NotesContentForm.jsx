@@ -14,7 +14,6 @@ function NotesContentForm({ data, onChange }) {
     el.style.height = `${el.scrollHeight}px`;
   };
 
-  // Handle save to backend
   const handleSaveNotes = async (notesId, title, text) => {
     try {
       await api.patch("/notes/update", { notesId, title, text });
@@ -36,7 +35,6 @@ function NotesContentForm({ data, onChange }) {
       align === "center" ? "center" : align === "right" ? "right" : "left";
     const fontWeight = isBold ? "bold" : "normal";
 
-    // Build a clean HTML document for printing
     const printWindow = window.open("", "_blank", "width=800,height=600");
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -57,7 +55,7 @@ function NotesContentForm({ data, onChange }) {
               margin: 0 auto;
             }
             .print-title {
-              font-family: 'Instrument Serif', serif;
+              font-family: 'Fraunces', serif;
               font-size: 32px;
               font-weight: bold;
               border-bottom: 2px solid #ccc;
@@ -86,7 +84,6 @@ function NotesContentForm({ data, onChange }) {
       </html>
     `);
     printWindow.document.close();
-    // Wait for content to render then print
     printWindow.focus();
     printWindow.print();
   };
@@ -99,95 +96,236 @@ function NotesContentForm({ data, onChange }) {
         : "text-left";
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* 1. SCREEN VIEW – normal editing */}
-      <div className="flex flex-col items-center">
-        <div className="liquid-glass flex w-full max-w-212.5 min-h-100 flex-col justify-between rounded-3xl p-6 sm:p-10 shadow-2xl transition-all duration-300">
-          {/* Formatting Toolbar */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-2 border-b border-border/20 pb-4 text-xs">
-            <div className="flex items-center gap-1 rounded-full bg-foreground/5 p-1">
-              <span className="px-2 text-muted-foreground">Alignment:</span>
-              {["left", "center", "right"].map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setAlign(option)}
-                  className={`rounded-full px-3 py-1 capitalize transition-all ${
-                    align === option
-                      ? "bg-foreground text-background font-medium"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center rounded-full bg-foreground/5 p-1">
-              <button
-                type="button"
-                onClick={() => setIsBold(!isBold)}
-                className={`rounded-full px-3 py-1 font-bold transition-all ${
-                  isBold
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                B
-              </button>
-            </div>
-          </div>
+    <div className="animate-[riseIn_0.35s_ease]">
+      {/* Torn edge SVG */}
+      <svg
+        className="block w-full"
+        viewBox="0 0 720 14"
+        preserveAspectRatio="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ height: 14, marginBottom: -14 }}
+      >
+        <polygon
+          points="0,5 15,1 30,6 45,2 60,5 75,0 90,6 105,2 120,5 135,1 150,6 165,2 180,5 195,0 210,6 225,2 240,5 255,1 270,6 285,2 300,5 315,0 330,6 345,2 360,5 375,1 390,6 405,2 420,5 435,0 450,6 465,2 480,5 495,1 510,6 525,2 540,5 555,0 570,6 585,2 600,5 615,1 630,6 645,2 660,5 675,0 690,6 705,2 720,5 720,14 0,14"
+          fill="#ede7d8"
+        />
+      </svg>
 
-          {/* Editable fields */}
-          <div className="flex flex-col gap-6">
-            <input
-              type="text"
-              value={data?.title || ""}
-              onChange={(e) => onChange({ title: e.target.value })}
-              placeholder="Untitled Document"
-              className={`w-full bg-transparent border-b border-border/40 pb-3 text-3xl sm:text-4xl text-foreground placeholder:text-muted-foreground/50 outline-none transition-colors focus:border-foreground/60 ${alignClass}`}
-              style={{ fontFamily: "'Instrument Serif', serif" }}
-            />
-            <textarea
-              ref={textareaRef}
-              value={data?.text || ""}
-              onChange={(e) => {
-                onChange({ text: e.target.value });
-                resizeTextarea();
-              }}
-              placeholder="Start typing your note here…"
-              rows={4}
-              className={`w-full resize-none bg-transparent text-base sm:text-lg text-foreground placeholder:text-muted-foreground/60 leading-relaxed outline-none overflow-hidden border-none ${alignClass} ${
-                isBold ? "font-bold" : "font-normal"
-              }`}
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border/30 pt-4">
-            <span className="text-xs text-muted-foreground">
-              Dynamic Document View
-            </span>
-            <div className="flex items-center gap-3">
+      {/* Paper Card */}
+      <div className="rounded-b-[10px] bg-[#ede7d8] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.55),0_2px_0_#ddd4bc]">
+        <div className="px-[52px] pb-[52px] pt-[34px]">
+          {/* Topline */}
+          <div className="mb-5 flex items-center justify-between">
+            <div className="inline-flex items-center gap-1.5 rounded-[20px] bg-[rgba(40,36,31,0.06)] px-[9px] py-1 font-['IBM_Plex_Mono',monospace] text-[10.5px] uppercase tracking-[0.5px] text-[#75695a]">
+              <span className="h-[6px] w-[6px] rounded-full bg-[#4fa88f]" />
+              Note : Save the document befor leaving the application.
+            </div>
+            <div className="flex gap-1.5">
               <button
                 type="button"
                 onClick={handlePrint}
-                className="rounded-full border border-border/60 bg-transparent px-6 py-2.5 text-sm font-medium text-foreground transition-all duration-300 hover:scale-[1.03] hover:bg-foreground/10 hover:shadow-lg"
+                className="flex h-[30px] w-[30px] items-center justify-center rounded-md text-[#75695a] transition-colors hover:bg-[rgba(40,36,31,0.08)] hover:text-[#28241f]"
+                title="Print / Download PDF"
               >
-                Download PDF
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                >
+                  <path
+                    d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <rect
+                    x="6"
+                    y="14"
+                    width="12"
+                    height="8"
+                    rx="1"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                  />
+                </svg>
               </button>
               <button
                 type="button"
                 onClick={() =>
                   handleSaveNotes(data?._id, data?.title, data?.text)
                 }
-                className="liquid-glass rounded-full px-8 py-2.5 text-sm font-medium text-foreground transition-all duration-300 hover:scale-[1.03] hover:shadow-lg"
+                className="flex h-[30px] w-[30px] items-center justify-center rounded-md text-[#75695a] transition-colors hover:bg-[rgba(40,36,31,0.08)] hover:text-[#28241f]"
+                title="Save note"
               >
-                Save Note
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                >
+                  <path
+                    d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <polyline
+                    points="17 21 17 13 7 13 7 21"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <polyline
+                    points="7 3 7 8 15 8"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
             </div>
           </div>
+
+          {/* Title */}
+          <input
+            type="text"
+            value={data?.title || ""}
+            onChange={(e) => onChange({ title: e.target.value })}
+            placeholder="Untitled note"
+            className={`w-full bg-transparent font-['Fraunces',serif] text-[32px] font-semibold leading-[1.25] tracking-[-0.2px] text-[#28241f] outline-none placeholder:text-[#75695a]/60 ${alignClass}`}
+          />
+
+          {/* Squiggle */}
+          <svg
+            className="my-2.5 block"
+            viewBox="0 0 160 10"
+            width="160"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M2 6c8-6 14 4 22-2s14 4 22-2 14 4 22-2 14 4 22-2 14 4 22-2 14 4 22-2"
+              stroke="#d7a63b"
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+            />
+          </svg>
+
+          {/* Meta */}
+          <div className="mb-6 flex flex-wrap gap-[18px] font-['IBM_Plex_Mono',monospace] text-[11px] text-[#75695a]">
+            <span className="flex items-center gap-[5px]">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-3 w-3 opacity-70"
+              >
+                <rect
+                  x="3"
+                  y="5"
+                  width="18"
+                  height="16"
+                  rx="2"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                />
+                <path
+                  d="M3 10h18M8 3v4M16 3v4"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+              {data?.updatedAt
+                ? new Date(data.updatedAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                : "—"}
+            </span>
+            <span className="flex items-center gap-[5px]">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-3 w-3 opacity-70"
+              >
+                <path
+                  d="M4 6h16M4 12h16M4 18h10"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+              {(() => {
+                const words = (data?.text || "")
+                  .trim()
+                  .split(/\s+/)
+                  .filter(Boolean).length;
+                return words + (words === 1 ? " word" : " words");
+              })()}
+            </span>
+          </div>
+
+          {/* Formatting Toolbar */}
+          <div className="mb-4 flex flex-wrap items-center gap-3 border-b border-[#ddd4bc]/60 pb-3">
+            <div className="flex items-center gap-1 rounded-md bg-[rgba(40,36,31,0.06)] p-1">
+              {["left", "center", "right"].map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setAlign(option)}
+                  className={`rounded px-2.5 py-1 text-[11px] font-medium capitalize transition-all ${
+                    align === option
+                      ? "bg-[#28241f] text-[#ede7d8]"
+                      : "text-[#75695a] hover:text-[#28241f]"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsBold(!isBold)}
+              className={`rounded px-3 py-1 text-[11px] font-bold transition-all ${
+                isBold
+                  ? "bg-[#28241f] text-[#ede7d8]"
+                  : "bg-[rgba(40,36,31,0.06)] text-[#75695a] hover:text-[#28241f]"
+              }`}
+            >
+              B
+            </button>
+          </div>
+
+          {/* Body */}
+          <textarea
+            ref={textareaRef}
+            value={data?.text || ""}
+            onChange={(e) => {
+              onChange({ text: e.target.value });
+              resizeTextarea();
+            }}
+            placeholder="Start writing…"
+            rows={1}
+            className={`w-full resize-none overflow-hidden bg-transparent font-['Inter',sans-serif] text-[15.5px] leading-[1.75] text-[#28241f] outline-none placeholder:text-[#75695a]/60 ${alignClass} ${isBold ? "font-bold" : "font-normal"}`}
+            style={{ minHeight: 120 }}
+          />
         </div>
       </div>
+
+      <style>{`
+        @keyframes riseIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }

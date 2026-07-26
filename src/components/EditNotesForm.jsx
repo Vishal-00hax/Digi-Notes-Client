@@ -5,8 +5,6 @@ import toast from "react-hot-toast";
 import { createPortal } from "react-dom";
 
 function EditNotesForm({ notesId, title, onClose }) {
-  console.log("Note ID & Title", notesId, title);
-
   const [newTitle, setNewTitle] = useState(title);
 
   const handleTitleUpdate = async () => {
@@ -15,38 +13,34 @@ function EditNotesForm({ notesId, title, onClose }) {
         notesId: notesId,
         title: newTitle,
       });
-      toast.success("Title Update");
+      toast.success("Title Updated");
       onClose?.();
     } catch (err) {
       const errText =
-        err.response.message || err.response || "Something went wrong";
+        err.response?.message || err.response || "Something went wrong";
       toast.error(errText);
     }
   };
 
-  const displayFont = { fontFamily: "'Instrument Serif', serif" };
-
-  const inputClasses =
-    "w-full rounded-xl border border-border bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-colors duration-300 focus:border-foreground/40";
-
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 px-6 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#12151a]/70 px-6 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="liquid-glass animate-fade-rise w-full max-w-sm rounded-3xl px-8 py-8"
+        className="w-full max-w-sm animate-[riseIn_0.35s_ease] rounded-2xl border border-[#2a303b] bg-[#1e232c] px-8 py-8 shadow-2xl"
       >
+        {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h3 className="text-2xl text-foreground" style={displayFont}>
+          <h3 className="font-['Fraunces',serif] text-2xl text-[#e6e4dd]">
             Update Title
           </h3>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="text-muted-foreground transition-colors duration-300 hover:text-foreground"
+            className="text-[#9297a1] transition-colors hover:text-[#e6e4dd]"
           >
             <svg
               width="16"
@@ -62,8 +56,9 @@ function EditNotesForm({ notesId, title, onClose }) {
           </button>
         </div>
 
+        {/* Input */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="note-title" className="text-xs text-muted-foreground">
+          <label htmlFor="note-title" className="text-xs text-[#9297a1]">
             Title
           </label>
           <input
@@ -71,23 +66,24 @@ function EditNotesForm({ notesId, title, onClose }) {
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            className={inputClasses}
+            className="w-full rounded-xl border border-[#2a303b] bg-[#171b22] px-4 py-3 text-sm text-[#e6e4dd] outline-none transition-colors placeholder:text-[#565c66] focus:border-[#d7a63b]/40"
             autoFocus
           />
         </div>
 
+        {/* Actions */}
         <div className="mt-6 flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full px-5 py-2.5 text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground"
+            className="rounded-lg px-5 py-2.5 text-sm text-[#9297a1] transition-colors hover:text-[#e6e4dd]"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleTitleUpdate}
-            className="liquid-glass rounded-full px-6 py-2.5 text-sm text-foreground transition-transform duration-300 hover:scale-[1.03]"
+            className="rounded-lg bg-[#d7a63b] px-6 py-2.5 text-sm font-semibold text-[#1a1305] shadow-[0_1px_0_rgba(0,0,0,0.15)] transition-all hover:bg-[#e2b452] active:translate-y-[1px]"
           >
             Update Title
           </button>
