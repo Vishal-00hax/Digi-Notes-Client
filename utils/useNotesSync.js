@@ -1,28 +1,26 @@
 import { connectSocket } from "../utils/socket";
 import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { noteCreated, noteUpdated, noteDeleted } from "./notesSlice";
 
-export const useNotesSync = (setNotes) => {
+export const useNotesSync = () => {
+  const dispatch = useDispatch();
+
   useEffect(() => {
     const socket = connectSocket();
 
-    socket.on("note:created", (newNote) => {
-      setNotes((perv) => [newNote, ...perv]);
-    });
+    const handleCreated = (newNote) => dispatch(noteCreated(newNote));
+    const handleUpdated = (updatedNote) => dispatch(noteUpdated(updatedNote));
+    const handleDeleted = (notesId) => dispatch(noteDeleted(notesId));
 
-    socket.on("note:updated", (updatedNote) => {
-      setNotes((perv) =>
-        perv.map((n) => (n._id === updatedNote._id ? updatedNote : n)),
-      );
-    });
-
-    socket.on("note:deleted", (notesId) => {
-      setNotes((perv) => perv.filter((n) => n._id !== notesId));
-    });
+    socket.on("note:created", handleCreated);
+    socket.on("note:updated", handleUpdated);
+    socket.on("note:deleted", handleDeleted);
 
     return () => {
-      socket.off("note:created");
-      socket.off("note:updated");
-      socket.off("note:deleted");
+      socket.off("note:created", handleCreated);
+      socket.off("note:updated", handleUpdated);
+      socket.off("note:deleted", handleDeleted);
     };
-  }, [setNotes]);
+  }, [dispatch]);
 };

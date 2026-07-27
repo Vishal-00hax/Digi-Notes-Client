@@ -1,3 +1,4 @@
+// ChatAslAI.jsx
 import React from "react";
 import { useState } from "react";
 import api from "../../utils/axios";
@@ -28,9 +29,9 @@ function ChatAslAI({ setSelectedNoteId }) {
   const source = aiResponse.source;
 
   return (
-    <div className="flex h-[calc(100vh-64px)] w-full flex-col bg-[#12151a]">
+    <div className="flex h-full w-full flex-col overflow-hidden">
       {/* ===== HEADER ===== */}
-      <div className="flex items-center justify-between border-b border-[#2a303b] bg-[#171b22] px-6 py-3">
+      <div className="flex flex-shrink-0 items-center justify-between border-b border-[#2a303b] px-6 py-3.5">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[rgba(215,166,59,0.14)] text-[#d7a63b]">
             <svg
@@ -119,7 +120,7 @@ function ChatAslAI({ setSelectedNoteId }) {
           <div className="mx-auto max-w-3xl px-6 py-8">
             {/* User Message */}
             <div className="mb-6 flex justify-end">
-              <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-[#1e232c] px-5 py-3.5">
+              <div className="max-w-[80%] rounded-2xl rounded-tr-sm border border-[#2a303b] bg-[#1e232c] px-5 py-3.5">
                 <p className="text-[15px] leading-relaxed text-[#e6e4dd]">
                   {aiResponse.question}
                 </p>
@@ -150,13 +151,16 @@ function ChatAslAI({ setSelectedNoteId }) {
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="whitespace-pre-wrap font-['Inter',sans-serif] text-[15px] leading-[1.75] text-[#9297a1]">
-                  {aiResponse.answer}
-                </p>
+                {/* Paper-style answer bubble, matches the note reading pane */}
+                <div className="rounded-[3px_14px_14px_14px] bg-[#ede7d8] px-5 py-4 shadow-[0_10px_26px_-14px_rgba(0,0,0,0.5)]">
+                  <p className="whitespace-pre-wrap font-['Inter',sans-serif] text-[15px] leading-[1.75] text-[#28241f]">
+                    {aiResponse.answer}
+                  </p>
+                </div>
 
                 {/* Sources */}
                 {aiResponse?.source?.length > 0 && (
-                  <div className="mt-5">
+                  <div className="mt-4">
                     <details className="group rounded-xl border border-[#2a303b] bg-[#171b22]">
                       <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl px-4 py-3 font-['IBM_Plex_Mono',monospace] text-[10.5px] font-medium uppercase tracking-[0.5px] text-[#9297a1] transition-colors hover:text-[#e6e4dd]">
                         <span className="flex items-center gap-2">
@@ -233,7 +237,7 @@ function ChatAslAI({ setSelectedNoteId }) {
               </div>
             </div>
 
-            {/* Loading Indicator */}
+            {/* Loading Indicator — now a paper-bubble to match the answer style */}
             {loading && (
               <div className="mt-6 flex gap-3">
                 <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[rgba(215,166,59,0.14)] text-[#d7a63b]">
@@ -257,17 +261,17 @@ function ChatAslAI({ setSelectedNoteId }) {
                     />
                   </svg>
                 </div>
-                <div className="flex items-center gap-2 py-2">
+                <div className="flex w-fit items-center gap-1.5 rounded-[3px_14px_14px_14px] bg-[#ede7d8] px-5 py-4">
                   <span
-                    className="h-2 w-2 animate-bounce rounded-full bg-[#d7a63b]"
+                    className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#75695a]"
                     style={{ animationDelay: "0ms" }}
                   />
                   <span
-                    className="h-2 w-2 animate-bounce rounded-full bg-[#d7a63b]"
+                    className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#75695a]"
                     style={{ animationDelay: "150ms" }}
                   />
                   <span
-                    className="h-2 w-2 animate-bounce rounded-full bg-[#d7a63b]"
+                    className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#75695a]"
                     style={{ animationDelay: "300ms" }}
                   />
                 </div>
@@ -278,7 +282,7 @@ function ChatAslAI({ setSelectedNoteId }) {
       </div>
 
       {/* ===== INPUT AREA ===== */}
-      <div className="border-t border-[#2a303b] bg-[#171b22] px-6 py-4">
+      <div className="flex-shrink-0 border-t border-[#2a303b] px-6 py-4">
         <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-xl border border-[#2a303b] bg-[#1e232c] p-2 transition-all focus-within:border-[#565c66]">
           <input
             type="text"
@@ -296,7 +300,7 @@ function ChatAslAI({ setSelectedNoteId }) {
           <button
             onClick={handleAskAI}
             disabled={loading || !qustion.trim()}
-            className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#d7a63b] text-[#1a1305] shadow-[0_1px_0_rgba(0,0,0,0.15)] transition-all hover:bg-[#e2b452] active:translate-y-[1px] disabled:opacity-40 disabled:cursor-not-allowed"
+            className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#d7a63b] text-[#1a1305] shadow-[0_1px_0_rgba(0,0,0,0.15)] transition-all hover:bg-[#e2b452] active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {loading ? (
               <svg

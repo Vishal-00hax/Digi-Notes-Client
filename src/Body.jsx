@@ -4,7 +4,7 @@ import { Outlet } from "react-router";
 
 function Body() {
   return (
-    <div>
+    <div className="flex h-screen flex-col overflow-hidden">
       <NavBar />
       <Outlet />
     </div>

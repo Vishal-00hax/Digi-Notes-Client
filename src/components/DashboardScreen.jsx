@@ -1,25 +1,35 @@
 import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import api from "../../utils/axios";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
 import EditNotesForm from "./EditNotesForm";
 import NotesContentForm from "./NotesContentForm";
 import { useNotesSync } from "../../utils/useNotesSync";
-import { useSingleNoteSync } from "../../utils/useSingleNoteSync";
 import ChatAslAI from "./ChatAslAI";
+import { Plus, BotMessageSquare } from "lucide-react";
+import {
+  setNotes,
+  setSelectedNoteId,
+  setSelectedNote,
+  setLoadingNote,
+  patchSelectedNote,
+} from "../../utils/notesSlice";
 
 function DashboardScreen() {
-  const [notes, setNotes] = useState([]);
+  const dispatch = useDispatch();
+  const notes = useSelector((state) => state.notes.items);
+  const selectedNoteId = useSelector((state) => state.notes.selectedNoteId);
+  const selectedNote = useSelector((state) => state.notes.selectedNote);
+  const loadingNote = useSelector((state) => state.notes.loadingNote);
+
   const [isEditingNoteId, setIsEditingNoteId] = useState(null);
-  const [selectedNoteId, setSelectedNoteId] = useState(null);
-  const [selectedNote, setSelectedNote] = useState(null);
-  const [loadingNote, setLoadingNote] = useState(false);
   const [searchText, setSearchText] = useState("");
 
   const getUserNotes = async () => {
     try {
       const response = await api.get("/notes/user");
-      setNotes(response.data.notes);
+      dispatch(setNotes(response.data.notes));
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");
     }
@@ -29,36 +39,34 @@ function DashboardScreen() {
     getUserNotes();
   }, []);
 
-  // Real-time data syncing
-  useNotesSync(setNotes);
-  useSingleNoteSync(selectedNoteId, setSelectedNote);
+  // ab sirf ek hi sync hook — poora Redux store real-time rehta hai
+  useNotesSync();
 
-  // Fetch full note whenever selection changes
   useEffect(() => {
     if (!selectedNoteId) {
-      setSelectedNote(null);
+      dispatch(setSelectedNote(null));
       return;
     }
     const getNoteDetails = async () => {
-      setLoadingNote(true);
+      dispatch(setLoadingNote(true));
       try {
         const response = await api.get(`/notes/get/${selectedNoteId}`);
-        setSelectedNote(response.data.note);
+        dispatch(setSelectedNote(response.data.note));
       } catch (err) {
         toast.error(err.response?.data?.message || "Something went wrong");
       } finally {
-        setLoadingNote(false);
+        dispatch(setLoadingNote(false));
       }
     };
     getNoteDetails();
-  }, [selectedNoteId]);
+  }, [selectedNoteId, dispatch]);
 
   const handleCreateNotes = async () => {
     try {
       const response = await api.post("/notes/create");
       toast.success("New Note Created");
       if (response.data?.note?._id) {
-        setSelectedNoteId(response.data.note._id);
+        dispatch(setSelectedNoteId(response.data.note._id));
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");
@@ -69,17 +77,20 @@ function DashboardScreen() {
     try {
       await api.delete(`/notes/delete/${notesId}`);
       toast.success("Note Deleted");
-      if (selectedNoteId === notesId) setSelectedNoteId(null);
+      if (selectedNoteId === notesId) dispatch(setSelectedNoteId(null));
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");
     }
   };
 
   const handleNoteChange = (changes) => {
-    setSelectedNote((prev) => ({ ...prev, ...changes }));
+    dispatch(patchSelectedNote(changes));
   };
 
-  // Case-insensitive & partial search matching
+  const handleIsAskAi = () => {
+    dispatch(setSelectedNoteId(null));
+  };
+
   const filteredNotes = notes
     .filter(
       (not) =>
@@ -90,41 +101,31 @@ function DashboardScreen() {
     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
   const formatDate = (date) => dayjs(date).format("MMM D, YYYY");
-
-  const snippet = (text) => {
-    if (!text) return "";
-    return text.replace(/\n/g, " ").slice(0, 64);
-  };
+  const snippet = (text) => (text ? text.replace(/\n/g, " ").slice(0, 64) : "");
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#12151a] text-[#e6e4dd]">
+    <div className="flex flex-1 min-h-0 w-full overflow-hidden bg-[#12151a] text-[#e6e4dd]">
       {/* ===== SIDEBAR ===== */}
-      <aside className="flex w-[340px] min-w-[340px] flex-col border-r border-[#2a303b] bg-[#171b22]">
-        {/* Create Button */}
-        <div className="px-5 pb-4 mt-5">
+      <aside className="flex w-[340px] min-w-[340px] min-h-0 flex-col border-r border-[#2a303b] bg-[#171b22]">
+        <div className="mt-5 px-5 pb-4">
           <button
             type="button"
             onClick={handleCreateNotes}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#d7a63b] px-4 py-2.5 text-sm font-semibold text-[#1a1305] shadow-[0_1px_0_rgba(0,0,0,0.15)] transition-all duration-150 hover:bg-[#e2b452] active:translate-y-[1px]"
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-            >
-              <path
-                d="M12 5v14M5 12h14"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
-            </svg>
+            <Plus size={16} />
             Create note
+          </button>
+          <button
+            type="button"
+            onClick={handleIsAskAi}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#d7a63b] px-4 py-2.5 text-sm font-semibold text-[#1a1305] shadow-[0_1px_0_rgba(0,0,0,0.15)] transition-all duration-150 hover:bg-[#e2b452] active:translate-y-[1px] mt-4"
+          >
+            <BotMessageSquare size={16} />
+            Ask Ai
           </button>
         </div>
 
-        {/* Search */}
         <div className="px-5 pb-3.5">
           <div className="flex items-center gap-2 rounded-lg border border-[#2a303b] bg-[#1e232c] px-2.5 py-2">
             <svg
@@ -157,7 +158,6 @@ function DashboardScreen() {
           </div>
         </div>
 
-        {/* List Meta */}
         <div className="flex items-baseline justify-between px-[22px] pb-2 pt-1.5 font-['IBM_Plex_Mono',monospace] text-[10.5px] uppercase tracking-[0.6px] text-[#565c66]">
           <span>
             {filteredNotes.length}{" "}
@@ -166,13 +166,12 @@ function DashboardScreen() {
           <span>Recent first</span>
         </div>
 
-        {/* Notes List */}
-        <div className="flex-1 overflow-y-auto px-2.5 pb-4">
+        <div className="flex-1 min-h-0 overflow-y-auto px-2.5 pb-4">
           {filteredNotes.length > 0 ? (
             filteredNotes.map((not) => (
               <div
                 key={not._id}
-                onClick={() => setSelectedNoteId(not._id)}
+                onClick={() => dispatch(setSelectedNoteId(not._id))}
                 className={`group relative flex cursor-pointer gap-3 rounded-lg px-4 py-3 transition-colors duration-150 ${
                   selectedNoteId === not._id
                     ? "bg-[#1e232c]"
@@ -197,7 +196,6 @@ function DashboardScreen() {
                   </p>
                 </div>
 
-                {/* Hover Actions */}
                 <div className="absolute right-2 bottom-2 flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                   <button
                     type="button"
@@ -238,63 +236,28 @@ function DashboardScreen() {
         </div>
       </aside>
 
-      {/* ===== MAIN / READING PANE ===== */}
+      {/* ===== MAIN ===== */}
       <main
-        className="relative flex flex-1 flex-col items-center overflow-y-auto"
+        className="relative flex flex-1 min-h-0 flex-col overflow-hidden"
         style={{
           background:
             "radial-gradient(ellipse 900px 600px at 75% -10%, rgba(215,166,59,0.05), transparent), #12151a",
         }}
       >
-        <div className="w-full max-w-[720px] px-10 py-12">
-          {selectedNote ? (
-            <NotesContentForm data={selectedNote} onChange={handleNoteChange} />
-          ) : (
-            <div className="mx-auto my-auto flex max-w-[340px] flex-col items-center text-center">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="mb-4 h-[52px] w-[52px] text-[#d7a63b] opacity-85"
-              >
-                <path
-                  d="M4 20L14.5 9.5M14.5 9.5L18 6a1.5 1.5 0 0 0-3-3L11.5 6.5M14.5 9.5 11.5 6.5M4 20l1.2-4.2L11.5 9.6"
-                  stroke="currentColor"
-                  strokeWidth="1.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <h2 className="mb-2 font-['Fraunces',serif] text-[21px] font-medium text-[#e6e4dd]">
-                Nothing selected yet
-              </h2>
-              <ChatAslAI setSelectedNoteId={setSelectedNoteId} />
-              <p className="text-[13.5px] leading-relaxed text-[#9297a1] mt-5">
-                Pick a note from the list on the left, or start a fresh page.
-              </p>
-              <button
-                type="button"
-                onClick={handleCreateNotes}
-                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[#d7a63b] px-5 py-2.5 text-sm font-semibold text-[#1a1305] shadow-[0_1px_0_rgba(0,0,0,0.15)] transition-all duration-150 hover:bg-[#e2b452] active:translate-y-[1px]"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                >
-                  <path
-                    d="M12 5v14M5 12h14"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                Create note
-              </button>
+        {selectedNote ? (
+          <div className="h-full w-full min-h-0 overflow-y-auto">
+            <div className="mx-auto w-full max-w-[720px] px-10 py-12">
+              <NotesContentForm
+                data={selectedNote}
+                onChange={handleNoteChange}
+              />
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <ChatAslAI
+            setSelectedNoteId={(id) => dispatch(setSelectedNoteId(id))}
+          />
+        )}
       </main>
     </div>
   );

@@ -22,11 +22,11 @@ export const useSingleNoteSync = (notesId, setSelectedNote) => {
     };
 
     socket.on("note:updated", handleUpdate);
-    socket.on("note:updated", handleDelete);
+    socket.on("note:deleted", handleDelete);
 
     return () => {
       socket.off("note:updated", handleUpdate);
-      socket.off("note:updated", handleDelete);
+      socket.off("note:deleted", handleDelete);
     };
   }, [notesId, setSelectedNote]);
 };
