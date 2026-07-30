@@ -3,6 +3,7 @@ import React from "react";
 import { useState } from "react";
 import api from "../../utils/axios";
 import toast from "react-hot-toast";
+import { Sparkles } from "lucide-react";
 
 function ChatAslAI({ setSelectedNoteId }) {
   const [qustion, setQustion] = useState("");
@@ -34,33 +35,7 @@ function ChatAslAI({ setSelectedNoteId }) {
       <div className="flex flex-shrink-0 items-center justify-between border-b border-[#2a303b] px-6 py-3.5">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[rgba(215,166,59,0.14)] text-[#d7a63b]">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-            >
-              <path
-                d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"
-                fill="currentColor"
-                opacity="0.2"
-              />
-              <path
-                d="M12 6v6l4 2"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <circle
-                cx="12"
-                cy="12"
-                r="9"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-              />
-            </svg>
+            <Sparkles size={20} />
           </div>
           <div>
             <h2 className="font-['Fraunces',serif] text-sm font-medium text-[#e6e4dd]">
@@ -79,33 +54,7 @@ function ChatAslAI({ setSelectedNoteId }) {
           /* Empty State */
           <div className="flex h-full flex-col items-center justify-center px-6">
             <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[rgba(215,166,59,0.1)] text-[#d7a63b]">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-7 w-7"
-              >
-                <path
-                  d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"
-                  fill="currentColor"
-                  opacity="0.2"
-                />
-                <path
-                  d="M12 6v6l4 2"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="9"
-                  stroke="currentColor"
-                  strokeWidth="1.4"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <Sparkles />
             </div>
             <h2 className="mb-2 font-['Fraunces',serif] text-2xl font-medium text-[#e6e4dd]">
               Ask anything about your notes

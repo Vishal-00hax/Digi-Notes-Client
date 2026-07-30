@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 import { disconnectSocket } from "../../utils/socket";
 import { Link } from "react-router";
+import { Pencil } from "lucide-react";
 
 function NavBar() {
   const user = useSelector((store) => store.user);
@@ -34,26 +35,7 @@ function NavBar() {
     <nav className="relative z-10 flex items-center justify-between border-b border-[#2a303b] bg-[#171b22] px-6 py-4">
       <div className="flex items-center gap-2.5">
         <div className="flex h-[28px] w-[28px] items-center justify-center text-[#d7a63b]">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-          >
-            <path
-              d="M4 20L14.5 9.5M14.5 9.5L18 6a1.5 1.5 0 0 0-3-3L11.5 6.5M14.5 9.5 11.5 6.5M4 20l1.2-4.2L11.5 9.6"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M4 20l3.8-1"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-          </svg>
+          <Pencil />
         </div>
         <Link to={"/"}>
           <span className="font-['Fraunces',serif] text-lg font-semibold tracking-[0.2px] text-[#e6e4dd]">

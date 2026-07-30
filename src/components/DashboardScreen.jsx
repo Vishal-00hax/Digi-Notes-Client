@@ -5,9 +5,15 @@ import toast from "react-hot-toast";
 import dayjs from "dayjs";
 import EditNotesForm from "./EditNotesForm";
 import NotesContentForm from "./NotesContentForm";
-import { useNotesSync } from "../../utils/useNotesSync";
+import { useNotesSync } from "../../hooks/useNotesSync";
 import ChatAslAI from "./ChatAslAI";
-import { Plus, BotMessageSquare } from "lucide-react";
+import {
+  Plus,
+  BotMessageSquare,
+  Search,
+  SquarePen,
+  Trash2,
+} from "lucide-react";
 import {
   setNotes,
   setSelectedNoteId,
@@ -128,26 +134,7 @@ function DashboardScreen() {
 
         <div className="px-5 pb-3.5">
           <div className="flex items-center gap-2 rounded-lg border border-[#2a303b] bg-[#1e232c] px-2.5 py-2">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-[15px] w-[15px] shrink-0 text-[#565c66]"
-            >
-              <circle
-                cx="11"
-                cy="11"
-                r="7"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              />
-              <path
-                d="m20 20-3.5-3.5"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
+            <Search />
             <input
               type="text"
               value={searchText}
@@ -203,9 +190,9 @@ function DashboardScreen() {
                       e.stopPropagation();
                       setIsEditingNoteId(not._id);
                     }}
-                    className="rounded px-2 py-1 text-[11px] text-[#9297a1] transition-colors hover:text-[#e6e4dd]"
+                    className="rounded px-2 py-1 text-[11px] text-[#ffe100] transition-colors hover:text-[#e6e4dd]"
                   >
-                    Edit
+                    <SquarePen size={14} />
                   </button>
                   <button
                     type="button"
@@ -215,7 +202,7 @@ function DashboardScreen() {
                     }}
                     className="rounded px-2 py-1 text-[11px] text-[#9297a1] transition-colors hover:text-[#a1493a]"
                   >
-                    Delete
+                    <Trash2 size={14} />
                   </button>
                 </div>
 

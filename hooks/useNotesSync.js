@@ -1,7 +1,7 @@
 import { connectSocket } from "../utils/socket";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { noteCreated, noteUpdated, noteDeleted } from "./notesSlice";
+import { noteCreated, noteUpdated, noteDeleted } from "../utils/notesSlice";
 
 export const useNotesSync = () => {
   const dispatch = useDispatch();
