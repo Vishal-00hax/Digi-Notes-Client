@@ -13,6 +13,7 @@ import {
   Search,
   SquarePen,
   Trash2,
+  Mic,
 } from "lucide-react";
 import {
   setNotes,
@@ -21,6 +22,7 @@ import {
   setLoadingNote,
   patchSelectedNote,
 } from "../../utils/notesSlice";
+import { useVoiceInput } from "../../hooks/useVoiceInput";
 
 function DashboardScreen() {
   const dispatch = useDispatch();
@@ -31,6 +33,12 @@ function DashboardScreen() {
 
   const [isEditingNoteId, setIsEditingNoteId] = useState(null);
   const [searchText, setSearchText] = useState("");
+
+  const { isListening, isSupported, startListening } = useVoiceInput(
+    (transcript) => {
+      setSearchText(transcript);
+    },
+  );
 
   const getUserNotes = async () => {
     try {
@@ -142,6 +150,20 @@ function DashboardScreen() {
               placeholder="Search your notes…"
               className="w-full bg-transparent text-[13.5px] text-[#e6e4dd] outline-none placeholder:text-[#565c66]"
             />
+            {isSupported && (
+              <button
+                type="button"
+                onClick={startListening}
+                className={`shrink-0 rounded-full p-1.5 transition-colors ${
+                  isListening
+                    ? "text-[#d7a63b] animate-pulse"
+                    : "text-[#565c66] hover:text-[#e6e4dd]"
+                }`}
+                title="Search by voice"
+              >
+                <Mic size={16} />
+              </button>
+            )}
           </div>
         </div>
 

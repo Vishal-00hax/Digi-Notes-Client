@@ -4,11 +4,19 @@ import { useState } from "react";
 import api from "../../utils/axios";
 import toast from "react-hot-toast";
 import { Sparkles } from "lucide-react";
+import { useVoiceInput } from "../../hooks/useVoiceInput";
+import { Mic } from "lucide-react";
 
 function ChatAslAI({ setSelectedNoteId }) {
   const [qustion, setQustion] = useState("");
   const [aiResponse, setAIResponse] = useState({});
   const [loading, setLoading] = useState(false);
+
+  const { isListening, isSupported, startListening } = useVoiceInput(
+    (transcript) => {
+      setQustion(transcript);
+    },
+  );
 
   const handleAskAI = async () => {
     try {
@@ -17,6 +25,7 @@ function ChatAslAI({ setSelectedNoteId }) {
       const response = await api.post("/notes/ask-ai", { question: qustion });
       console.log("Response", response.data);
       setAIResponse(response.data);
+      setQustion("");
       toast.success("AI Response");
     } catch (err) {
       const errText =
@@ -246,6 +255,20 @@ function ChatAslAI({ setSelectedNoteId }) {
             }}
             className="flex-1 bg-transparent px-3 py-2.5 text-sm text-[#e6e4dd] outline-none placeholder:text-[#565c66]"
           />
+          {isSupported && (
+            <button
+              type="button"
+              onClick={startListening}
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                isListening
+                  ? "bg-[rgba(215,166,59,0.2)] text-[#d7a63b] animate-pulse"
+                  : "text-[#565c66] hover:text-[#e6e4dd]"
+              }`}
+              title="Ask by voice"
+            >
+              <Mic />
+            </button>
+          )}
           <button
             onClick={handleAskAI}
             disabled={loading || !qustion.trim()}
