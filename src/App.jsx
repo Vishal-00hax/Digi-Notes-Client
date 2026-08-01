@@ -5,6 +5,7 @@ import Body from "./Body";
 import DashboardScreen from "../src/components/DashboardScreen";
 import LoginScreen from "./components/LoginScreen";
 import EditNotesForm from "../src/components/EditNotesForm";
+import UploadFileNotes from "../src/components/UploadFileNotes";
 import { Toaster } from "react-hot-toast";
 import api from "../utils/axios";
 import { useDispatch, useSelector } from "react-redux";
@@ -39,6 +40,7 @@ function App() {
 
         <Route path="app" element={<Body />}>
           <Route index element={<DashboardScreen />} />
+          <Route path="upload" element={<UploadFileNotes />} />
         </Route>
         <Route path="login" element={<LoginScreen />} />
       </Routes>

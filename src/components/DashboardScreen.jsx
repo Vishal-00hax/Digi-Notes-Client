@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import api from "../../utils/axios";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
@@ -14,6 +15,7 @@ import {
   SquarePen,
   Trash2,
   Mic,
+  Upload,
 } from "lucide-react";
 import {
   setNotes,
@@ -26,6 +28,7 @@ import { useVoiceInput } from "../../hooks/useVoiceInput";
 
 function DashboardScreen() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const notes = useSelector((state) => state.notes.items);
   const selectedNoteId = useSelector((state) => state.notes.selectedNoteId);
   const selectedNote = useSelector((state) => state.notes.selectedNote);
@@ -77,7 +80,7 @@ function DashboardScreen() {
 
   const handleCreateNotes = async () => {
     try {
-      const response = await api.post("/notes/create");
+      const response = await api.post("/notes/create", { title: "", text: "" });
       toast.success("New Note Created");
       if (response.data?.note?._id) {
         dispatch(setSelectedNoteId(response.data.note._id));
@@ -137,6 +140,14 @@ function DashboardScreen() {
           >
             <BotMessageSquare size={16} />
             Ask Ai
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/app/upload")}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#d7a63b] px-4 py-2.5 text-sm font-semibold text-[#1a1305] shadow-[0_1px_0_rgba(0,0,0,0.15)] transition-all duration-150 hover:bg-[#e2b452] active:translate-y-[1px] mt-4"
+          >
+            <Upload size={16} />
+            Upload File
           </button>
         </div>
 
@@ -200,7 +211,8 @@ function DashboardScreen() {
                       {formatDate(not.updatedAt)}
                     </span>
                   </div>
-                  <p className="mt-[3px] truncate text-[12.5px] text-[#9297a1]">
+                  {/* FIX: Added pr-[76px] to reserve space for the absolute buttons so text truncates before them */}
+                  <p className="mt-[3px] truncate pr-[76px] text-[12.5px] text-[#9297a1]">
                     {not.text ? snippet(not.text) : "No preview"}
                   </p>
                 </div>

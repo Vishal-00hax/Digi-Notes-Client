@@ -37,7 +37,7 @@ function NavBar() {
         <div className="flex h-[28px] w-[28px] items-center justify-center text-[#d7a63b]">
           <Pencil />
         </div>
-        <Link to={"/"}>
+        <Link to={"/app"}>
           <span className="font-['Fraunces',serif] text-lg font-semibold tracking-[0.2px] text-[#e6e4dd]">
             Digital Notes
           </span>

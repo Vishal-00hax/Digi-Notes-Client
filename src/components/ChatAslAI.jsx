@@ -5,7 +5,7 @@ import api from "../../utils/axios";
 import toast from "react-hot-toast";
 import { Sparkles } from "lucide-react";
 import { useVoiceInput } from "../../hooks/useVoiceInput";
-import { Mic } from "lucide-react";
+import { Mic, FileText } from "lucide-react";
 
 function ChatAslAI({ setSelectedNoteId }) {
   const [qustion, setQustion] = useState("");
@@ -23,9 +23,8 @@ function ChatAslAI({ setSelectedNoteId }) {
       if (qustion === "") return;
       setLoading(true);
       const response = await api.post("/notes/ask-ai", { question: qustion });
-      console.log("Response", response.data);
-      setAIResponse(response.data);
       setQustion("");
+      setAIResponse(response.data);
       toast.success("AI Response");
     } catch (err) {
       const errText =
@@ -87,26 +86,8 @@ function ChatAslAI({ setSelectedNoteId }) {
 
             {/* AI Response */}
             <div className="flex gap-3">
-              <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[rgba(215,166,59,0.14)] text-[#d7a63b]">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-3.5 w-3.5"
-                >
-                  <path
-                    d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"
-                    fill="currentColor"
-                    opacity="0.3"
-                  />
-                  <path
-                    d="M12 6v6l4 2"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+              <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full  text-[#d7a63b]">
+                <Sparkles />
               </div>
               <div className="min-w-0 flex-1">
                 {/* Paper-style answer bubble, matches the note reading pane */}
@@ -122,27 +103,7 @@ function ChatAslAI({ setSelectedNoteId }) {
                     <details className="group rounded-xl border border-[#2a303b] bg-[#171b22]">
                       <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl px-4 py-3 font-['IBM_Plex_Mono',monospace] text-[10.5px] font-medium uppercase tracking-[0.5px] text-[#9297a1] transition-colors hover:text-[#e6e4dd]">
                         <span className="flex items-center gap-2">
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-3 w-3"
-                          >
-                            <path
-                              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                              stroke="currentColor"
-                              strokeWidth="1.6"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <polyline
-                              points="14 2 14 8 20 8"
-                              stroke="currentColor"
-                              strokeWidth="1.6"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
+                          <FileText size={16} />
                           Sources ({aiResponse.source.length})
                         </span>
                         <span className="transition-transform duration-200 group-open:rotate-180">
