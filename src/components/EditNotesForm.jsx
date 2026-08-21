@@ -24,16 +24,16 @@ function EditNotesForm({ notesId, title, onClose }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#12151a]/70 px-6 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#12151a]/70 px-4 backdrop-blur-sm md:px-6"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm animate-[riseIn_0.35s_ease] rounded-2xl border border-[#2a303b] bg-[#1e232c] px-8 py-8 shadow-2xl"
+        className="mx-4 w-full max-w-sm animate-[riseIn_0.35s_ease] rounded-2xl border border-[#2a303b] bg-[#1e232c] px-6 py-8 shadow-2xl md:px-8"
       >
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h3 className="font-['Fraunces',serif] text-2xl text-[#e6e4dd]">
+          <h3 className="font-['Fraunces',serif] text-xl text-[#e6e4dd] md:text-2xl">
             Update Title
           </h3>
           <button

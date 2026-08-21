@@ -16,6 +16,8 @@ import {
   Trash2,
   Mic,
   Upload,
+  Menu,
+  X,
 } from "lucide-react";
 import {
   setNotes,
@@ -36,6 +38,7 @@ function DashboardScreen() {
 
   const [isEditingNoteId, setIsEditingNoteId] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { isListening, isSupported, startListening } = useVoiceInput(
     (transcript) => {
@@ -56,7 +59,6 @@ function DashboardScreen() {
     getUserNotes();
   }, []);
 
-  // ab sirf ek hi sync hook — poora Redux store real-time rehta hai
   useNotesSync();
 
   useEffect(() => {
@@ -84,6 +86,7 @@ function DashboardScreen() {
       toast.success("New Note Created");
       if (response.data?.note?._id) {
         dispatch(setSelectedNoteId(response.data.note._id));
+        setIsSidebarOpen(false);
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");
@@ -106,6 +109,7 @@ function DashboardScreen() {
 
   const handleIsAskAi = () => {
     dispatch(setSelectedNoteId(null));
+    setIsSidebarOpen(false);
   };
 
   const filteredNotes = notes
@@ -121,10 +125,36 @@ function DashboardScreen() {
   const snippet = (text) => (text ? text.replace(/\n/g, " ").slice(0, 64) : "");
 
   return (
-    <div className="flex flex-1 min-h-0 w-full overflow-hidden bg-[#12151a] text-[#e6e4dd]">
-      {/* ===== SIDEBAR ===== */}
-      <aside className="flex w-[340px] min-w-[340px] min-h-0 flex-col border-r border-[#2a303b] bg-[#171b22]">
-        <div className="mt-5 px-5 pb-4">
+    <div className="relative flex flex-1 min-h-0 w-full overflow-hidden bg-[#12151a] text-[#e6e4dd]">
+      {/* Mobile backdrop */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* ===== SIDEBAR (Drawer on mobile, fixed on desktop) ===== */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-[280px] min-w-0 flex-col border-r border-[#2a303b] bg-[#171b22] transition-transform duration-300 ease-in-out md:static md:w-[300px] md:translate-x-0 lg:w-[340px] ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Mobile drawer header */}
+        <div className="flex items-center justify-between border-b border-[#2a303b] px-4 py-3 md:hidden">
+          <span className="font-['Fraunces',serif] text-lg font-semibold text-[#e6e4dd]">
+            Digital Notes
+          </span>
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(false)}
+            className="rounded p-1 text-[#9297a1] transition-colors hover:text-[#e6e4dd]"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="mt-4 px-4 pb-4 md:mt-5 md:px-5">
           <button
             type="button"
             onClick={handleCreateNotes}
@@ -136,24 +166,27 @@ function DashboardScreen() {
           <button
             type="button"
             onClick={handleIsAskAi}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#d7a63b] px-4 py-2.5 text-sm font-semibold text-[#1a1305] shadow-[0_1px_0_rgba(0,0,0,0.15)] transition-all duration-150 hover:bg-[#e2b452] active:translate-y-[1px] mt-4"
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-[#d7a63b] px-4 py-2.5 text-sm font-semibold text-[#1a1305] shadow-[0_1px_0_rgba(0,0,0,0.15)] transition-all duration-150 hover:bg-[#e2b452] active:translate-y-[1px] md:mt-4"
           >
             <BotMessageSquare size={16} />
             Ask Ai
           </button>
           <button
             type="button"
-            onClick={() => navigate("/app/upload")}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#d7a63b] px-4 py-2.5 text-sm font-semibold text-[#1a1305] shadow-[0_1px_0_rgba(0,0,0,0.15)] transition-all duration-150 hover:bg-[#e2b452] active:translate-y-[1px] mt-4"
+            onClick={() => {
+              navigate("/app/upload");
+              setIsSidebarOpen(false);
+            }}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-[#d7a63b] px-4 py-2.5 text-sm font-semibold text-[#1a1305] shadow-[0_1px_0_rgba(0,0,0,0.15)] transition-all duration-150 hover:bg-[#e2b452] active:translate-y-[1px] md:mt-4"
           >
             <Upload size={16} />
             Upload File
           </button>
         </div>
 
-        <div className="px-5 pb-3.5">
+        <div className="px-4 pb-3.5 md:px-5">
           <div className="flex items-center gap-2 rounded-lg border border-[#2a303b] bg-[#1e232c] px-2.5 py-2">
-            <Search />
+            <Search size={16} className="shrink-0 text-[#565c66]" />
             <input
               type="text"
               value={searchText}
@@ -167,7 +200,7 @@ function DashboardScreen() {
                 onClick={startListening}
                 className={`shrink-0 rounded-full p-1.5 transition-colors ${
                   isListening
-                    ? "text-[#d7a63b] animate-pulse"
+                    ? "animate-pulse text-[#d7a63b]"
                     : "text-[#565c66] hover:text-[#e6e4dd]"
                 }`}
                 title="Search by voice"
@@ -178,7 +211,7 @@ function DashboardScreen() {
           </div>
         </div>
 
-        <div className="flex items-baseline justify-between px-[22px] pb-2 pt-1.5 font-['IBM_Plex_Mono',monospace] text-[10.5px] uppercase tracking-[0.6px] text-[#565c66]">
+        <div className="flex items-baseline justify-between px-5 pb-2 pt-1.5 font-['IBM_Plex_Mono',monospace] text-[10.5px] uppercase tracking-[0.6px] text-[#565c66]">
           <span>
             {filteredNotes.length}{" "}
             {filteredNotes.length === 1 ? "note" : "notes"}
@@ -191,7 +224,10 @@ function DashboardScreen() {
             filteredNotes.map((not) => (
               <div
                 key={not._id}
-                onClick={() => dispatch(setSelectedNoteId(not._id))}
+                onClick={() => {
+                  dispatch(setSelectedNoteId(not._id));
+                  setIsSidebarOpen(false);
+                }}
                 className={`group relative flex cursor-pointer gap-3 rounded-lg px-4 py-3 transition-colors duration-150 ${
                   selectedNoteId === not._id
                     ? "bg-[#1e232c]"
@@ -199,7 +235,7 @@ function DashboardScreen() {
                 }`}
               >
                 {selectedNoteId === not._id && (
-                  <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r bg-[#d7a63b]" />
+                  <div className="absolute bottom-2 left-0 top-2 w-[3px] rounded-r bg-[#d7a63b]" />
                 )}
                 <div className="mt-0.5 h-full w-[4px] shrink-0 rounded bg-[#4fa88f]" />
                 <div className="min-w-0 flex-1">
@@ -211,20 +247,20 @@ function DashboardScreen() {
                       {formatDate(not.updatedAt)}
                     </span>
                   </div>
-                  {/* FIX: Added pr-[76px] to reserve space for the absolute buttons so text truncates before them */}
                   <p className="mt-[3px] truncate pr-[76px] text-[12.5px] text-[#9297a1]">
                     {not.text ? snippet(not.text) : "No preview"}
                   </p>
                 </div>
 
-                <div className="absolute right-2 bottom-2 flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                {/* Always visible on mobile, hover-only on desktop */}
+                <div className="absolute right-2 bottom-2 flex items-center gap-1 opacity-100 md:opacity-0 md:transition-opacity md:duration-200 md:group-hover:opacity-100">
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       setIsEditingNoteId(not._id);
                     }}
-                    className="rounded px-2 py-1 text-[11px] text-[#ffe100] transition-colors hover:text-[#e6e4dd]"
+                    className="rounded p-1.5 text-[#ffe100] transition-colors hover:text-[#e6e4dd] md:px-2 md:py-1"
                   >
                     <SquarePen size={14} />
                   </button>
@@ -234,7 +270,7 @@ function DashboardScreen() {
                       e.stopPropagation();
                       handleDelete(not._id);
                     }}
-                    className="rounded px-2 py-1 text-[11px] text-[#9297a1] transition-colors hover:text-[#a1493a]"
+                    className="rounded p-1.5 text-[#9297a1] transition-colors hover:text-[#a1493a] md:px-2 md:py-1"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -265,9 +301,30 @@ function DashboardScreen() {
             "radial-gradient(ellipse 900px 600px at 75% -10%, rgba(215,166,59,0.05), transparent), #12151a",
         }}
       >
+        {/* Mobile main header */}
+        <div className="flex flex-shrink-0 items-center justify-between border-b border-[#2a303b] bg-[#171b22] px-4 py-3 md:hidden">
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            className="rounded p-1 text-[#9297a1] transition-colors hover:text-[#e6e4dd]"
+          >
+            <Menu size={20} />
+          </button>
+          <span className="max-w-[60%] truncate font-['Fraunces',serif] text-sm font-medium text-[#e6e4dd]">
+            {selectedNote?.title || "Ask AI"}
+          </span>
+          <button
+            type="button"
+            onClick={handleCreateNotes}
+            className="rounded p-1 text-[#d7a63b] transition-colors hover:text-[#e2b452]"
+          >
+            <Plus size={20} />
+          </button>
+        </div>
+
         {selectedNote ? (
           <div className="h-full w-full min-h-0 overflow-y-auto">
-            <div className="mx-auto w-full max-w-[720px] px-10 py-12">
+            <div className="mx-auto w-full max-w-[720px] px-4 py-8 md:px-10 md:py-12">
               <NotesContentForm
                 data={selectedNote}
                 onChange={handleNoteChange}

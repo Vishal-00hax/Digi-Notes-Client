@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { FileUp, X, Loader2 } from "lucide-react";
 
-// ✅ PDF.js ko browser me kaam karne ke liye worker chahiye
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
   import.meta.url,
@@ -19,14 +18,13 @@ const SUPPORTED_TYPES = {
   "text/plain": "txt",
 };
 
-// ✅ PDF/DOCX extraction se aane wale invalid/control characters hataata hai
 const sanitizeText = (text) => {
   return text
-    .replace(/[\uD800-\uDFFF]/g, "") // lone surrogate pairs (PDF.js ka common issue)
-    .replace(/\u0000/g, "") // null bytes
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "") // control characters
-    .replace(/[ \t]+/g, " ") // multiple spaces/tabs ko single space
-    .replace(/\n{3,}/g, "\n\n") // 3+ consecutive newlines ko 2 tak limit karo
+    .replace(/[\uD800-\uDFFF]/g, "")
+    .replace(/\u0000/g, "")
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 };
 
@@ -39,7 +37,6 @@ function UploadFileNotes() {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
-  // ===== PDF se text extrect =====
   const extractFromPdf = async (file) => {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -54,14 +51,12 @@ function UploadFileNotes() {
     return fullText.trim();
   };
 
-  // ===== Word (.docx) se text extrect =====
   const extractFromDocx = async (file) => {
     const arrayBuffer = await file.arrayBuffer();
     const result = await mammoth.extractRawText({ arrayBuffer });
     return result.value.trim();
   };
 
-  // ===== Plain .txt se text extrect =====
   const extractFromTxt = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -81,7 +76,7 @@ function UploadFileNotes() {
       toast.error(
         "Unsupported file type. Please upload a PDF, DOCX, or TXT file.",
       );
-      e.target.value = ""; // input reset
+      e.target.value = "";
       return;
     }
 
@@ -98,13 +93,12 @@ function UploadFileNotes() {
         text = await extractFromTxt(file);
       }
 
-      const cleanedText = sanitizeText(text); // ✅ extraction ke turant baad hi clean kar do
+      const cleanedText = sanitizeText(text);
 
       if (!cleanedText) {
         toast.error("Could not extract any readable text from this file.");
       } else {
         setExtractedText(cleanedText);
-        // ✅ Agar title khaali hai, file naam se auto-fill kar do (extension hataakar)
         if (!title) {
           setTitle(file.name.replace(/\.[^/.]+$/, ""));
         }
@@ -130,7 +124,7 @@ function UploadFileNotes() {
       return;
     }
 
-    const cleanedText = sanitizeText(extractedText); // ✅ safety net — dobara clean karke bhejo
+    const cleanedText = sanitizeText(extractedText);
 
     if (!cleanedText) {
       toast.error("No content to save. Please upload a file first.");
@@ -139,7 +133,6 @@ function UploadFileNotes() {
 
     setIsSaving(true);
     try {
-      // ✅ Sirf ek hi API call — create hi title/text le lega
       await api.post("/notes/create", {
         title: title.trim(),
         text: cleanedText,
@@ -157,9 +150,9 @@ function UploadFileNotes() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#12151a] px-6 py-12 text-[#e6e4dd] sm:px-10">
+    <div className="min-h-screen w-full bg-[#12151a] px-4 py-8 text-[#e6e4dd] sm:px-6 md:px-10 md:py-12">
       <div className="mx-auto max-w-3xl">
-        <h1 className="mb-2 font-['Fraunces',serif] text-2xl font-medium text-[#e6e4dd]">
+        <h1 className="mb-2 font-['Fraunces',serif] text-xl font-medium text-[#e6e4dd] md:text-2xl">
           Upload File as Note
         </h1>
         <p className="mb-8 text-sm text-[#9297a1]">
@@ -188,7 +181,7 @@ function UploadFileNotes() {
           </label>
 
           {!fileName ? (
-            <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[#2a303b] bg-[#171b22] px-6 py-12 text-center transition-colors hover:border-[#565c66]">
+            <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[#2a303b] bg-[#171b22] px-6 py-8 text-center transition-colors hover:border-[#565c66] md:py-12">
               <FileUp className="h-8 w-8 text-[#d7a63b]" />
               <div>
                 <p className="text-sm text-[#e6e4dd]">
@@ -228,7 +221,7 @@ function UploadFileNotes() {
           )}
         </div>
 
-        {/* ===== Extracted Text Preview (editable) ===== */}
+        {/* ===== Extracted Text Preview ===== */}
         {extractedText && !isExtracting && (
           <div className="mb-8 flex flex-col gap-1.5">
             <label className="font-['IBM_Plex_Mono',monospace] text-[10px] uppercase tracking-[0.5px] text-[#565c66]">

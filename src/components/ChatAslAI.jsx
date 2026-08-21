@@ -1,4 +1,4 @@
-// ChatAslAI.jsx
+// ChatAskAI.jsx
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import api from "../../utils/axios";
 import toast from "react-hot-toast";
@@ -22,18 +22,14 @@ import {
 } from "../../utils/chatSlice";
 import { useChatsSync } from "../../hooks/useChatsSync";
 
-function ChatAslAI({ setSelectedNoteId }) {
-  // 1. Initialize WebSockets for real-time updates
+function ChatAskAI({ setSelectedNoteId }) {
   useChatsSync();
 
   const dispatch = useDispatch();
-
-  // 2. Global State via Redux
   const chats = useSelector((state) => state.chats || []);
 
   console.log(chats);
 
-  // Local States
   const [question, setQuestion] = useState("");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -41,19 +37,16 @@ function ChatAslAI({ setSelectedNoteId }) {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [isAiTyping, setIsAiTyping] = useState(false);
 
-  // Refs for Scroll Management
   const chatContainerRef = useRef(null);
   const scrollStateRef = useRef({ height: 0, top: 0, isAdjusting: false });
   const isAutoScrollingRef = useRef(false);
 
-  // Browser Web Speech API for voice input
   const { isListening, isSupported, startListening } = useVoiceInput(
     (transcript) => {
       setQuestion(transcript);
     },
   );
 
-  // 1. Fetch Chats Logic
   const fetchChats = async (pageNumber, isLoadMore = false) => {
     try {
       if (isLoadMore) setIsFetchingMore(true);
@@ -66,7 +59,6 @@ function ChatAslAI({ setSelectedNoteId }) {
       const formattedChats = chat.reverse();
 
       if (isLoadMore) {
-        // Capture DOM state EXACTLY before injecting new chats and removing loader
         if (chatContainerRef.current) {
           scrollStateRef.current = {
             height: chatContainerRef.current.scrollHeight,
@@ -75,14 +67,10 @@ function ChatAslAI({ setSelectedNoteId }) {
           };
         }
 
-        // FIX: पुराने चैट्स जोड़ने के लिए (डुप्लीकेट हटाकर)
         dispatch(addOlderChats(formattedChats));
         setIsFetchingMore(false);
       } else {
-        // FIX: इनिशियल लोड के लिए (पूरा डेटा सेट करने के लिए)
         dispatch(setAllChats(formattedChats));
-
-        // Small timeout ensures the DOM paints the initial load before scrolling
         setTimeout(scrollToBottom, 50);
       }
 
@@ -97,25 +85,20 @@ function ChatAslAI({ setSelectedNoteId }) {
     }
   };
 
-  // Initial Load
   useEffect(() => {
     fetchChats(1, false);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 2. Handle Scroll Position after loading older messages
   useLayoutEffect(() => {
     if (scrollStateRef.current.isAdjusting && chatContainerRef.current) {
       const container = chatContainerRef.current;
       const heightDifference =
         container.scrollHeight - scrollStateRef.current.height;
-
-      // Instantly snap the scroll position without animation
       container.scrollTop = scrollStateRef.current.top + heightDifference;
       scrollStateRef.current.isAdjusting = false;
     }
   }, [chats]);
 
-  // 3. Reverse Infinite Scroll Listener
   const handleScroll = (e) => {
     const { scrollTop } = e.target;
     if (scrollTop === 0 && hasMore && !isFetchingMore && !isFetchingInitial) {
@@ -125,7 +108,6 @@ function ChatAslAI({ setSelectedNoteId }) {
     }
   };
 
-  // 4. Scroll to Bottom Helper
   const scrollToBottom = () => {
     isAutoScrollingRef.current = true;
     requestAnimationFrame(() => {
@@ -141,26 +123,22 @@ function ChatAslAI({ setSelectedNoteId }) {
     });
   };
 
-  // 5. Ask AI Function
   const handleAskAI = async () => {
     if (!question.trim() || isAiTyping) return;
 
     const userQuery = question.trim();
     setQuestion("");
 
-    // Create a highly unique temporary ID
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Optimistic UI: Add user question instantly
     const optimisticChat = {
       _id: tempId,
       userQuery: userQuery,
-      aiResponse: null, // Indicates it's loading
+      aiResponse: null,
       source: [],
       createdAt: new Date().toISOString(),
     };
 
-    // FIX 1: टेम्परेरी चैट दिखाएं (addOrUpdateChat का इस्तेमाल करके)
     dispatch(addOrUpdateChat(optimisticChat));
     setIsAiTyping(true);
     scrollToBottom();
@@ -173,9 +151,8 @@ function ChatAslAI({ setSelectedNoteId }) {
 
       const data = response.data;
 
-      // बैकएंड रिस्पॉन्स को UI स्ट्रक्चर में मैप करें
       const resolvedChat = {
-        _id: data._id || tempId, // अगर बैकएंड ने ID नहीं दी, तो tempId इस्तेमाल करें
+        _id: data._id || tempId,
         userQuery: data.question || userQuery,
         aiResponse: data.answer || "No response received",
         source: data.source || [],
@@ -185,8 +162,6 @@ function ChatAslAI({ setSelectedNoteId }) {
         createdAt: new Date().toISOString(),
       };
 
-      // MAGIC FIX 2: पहले Temp चैट को हटाएं, फिर असली चैट को डालें।
-      // इससे सॉकेट और API के बीच का कोई भी टकराव (Race Condition) खत्म हो जाएगा।
       dispatch(removeTempChat(tempId));
       dispatch(addOrUpdateChat(resolvedChat));
 
@@ -197,14 +172,12 @@ function ChatAslAI({ setSelectedNoteId }) {
           err.message ||
           "Failed to get AI response",
       );
-      // एरर आने पर Temp चैट हटा दें
       dispatch(removeTempChat(tempId));
     } finally {
       setIsAiTyping(false);
     }
   };
 
-  // 6. Delete Chat Logic
   const handleDeleteChat = async (chatId) => {
     const loadingToast = toast.loading("Deleting chat...");
     try {
@@ -214,7 +187,6 @@ function ChatAslAI({ setSelectedNoteId }) {
         id: loadingToast,
       });
 
-      // यह अब 100% काम करेगा बिना पेज रीफ्रेश किए, क्योंकि हमने Slice में Object vs String लॉजिक फिक्स कर दिया है
       dispatch(removeChats(chatId));
     } catch (err) {
       toast.error(
@@ -227,7 +199,7 @@ function ChatAslAI({ setSelectedNoteId }) {
   const confirmDeleteChat = (chatId) => {
     toast(
       (t) => (
-        <div className="flex flex-col gap-3 min-w-[200px]">
+        <div className="flex min-w-[200px] flex-col gap-3">
           <span className="text-sm font-medium text-[#e6e4dd]">
             Delete this chat?
           </span>
@@ -268,7 +240,7 @@ function ChatAslAI({ setSelectedNoteId }) {
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-[#0d1117]">
       {/* ===== HEADER ===== */}
-      <div className="flex flex-shrink-0 items-center justify-between border-b border-[#2a303b] bg-[#12151a] px-6 py-3.5 z-10">
+      <div className="z-10 flex flex-shrink-0 items-center justify-between border-b border-[#2a303b] bg-[#12151a] px-4 py-3 md:px-6 md:py-3.5">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[rgba(215,166,59,0.14)] text-[#d7a63b]">
             <Sparkles size={20} />
@@ -288,18 +260,18 @@ function ChatAslAI({ setSelectedNoteId }) {
       <div
         ref={chatContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-6 [overflow-anchor:none]"
+        className="flex-1 overflow-y-auto p-4 [overflow-anchor:none] md:p-6"
       >
         {isFetchingInitial ? (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-[#d7a63b]" />
           </div>
         ) : chats.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center px-6">
+          <div className="flex h-full flex-col items-center justify-center px-4 md:px-6">
             <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[rgba(215,166,59,0.1)] text-[#d7a63b]">
               <Sparkles size={28} />
             </div>
-            <h2 className="mb-2 font-['Fraunces',serif] text-2xl font-medium text-[#e6e4dd]">
+            <h2 className="mb-2 text-center font-['Fraunces',serif] text-xl font-medium text-[#e6e4dd] md:text-2xl">
               Ask anything about your notes
             </h2>
             <p className="max-w-md text-center text-sm leading-relaxed text-[#9297a1]">
@@ -308,51 +280,40 @@ function ChatAslAI({ setSelectedNoteId }) {
             </p>
           </div>
         ) : (
-          <div className="mx-auto max-w-3xl space-y-8 flex flex-col">
-            {/* Loading Older Chats Spinner */}
+          <div className="mx-auto flex max-w-3xl flex-col space-y-8">
             {isFetchingMore && (
               <div className="flex justify-center py-4">
                 <Loader2 className="h-5 w-5 animate-spin text-[#565c66]" />
               </div>
             )}
 
-            {/* Chat Bubbles Loop */}
-            {chats.map((chat, index) => (
+            {chats.map((chat) => (
               <div key={chat._id} className="flex flex-col gap-6">
-                {/* ===== User Message with Hover Delete ===== */}
-                <div className="group flex justify-end gap-2 items-center relative">
+                {/* ===== User Message ===== */}
+                <div className="group relative flex items-center justify-end gap-2">
                   <button
                     onClick={() => confirmDeleteChat(chat._id)}
                     title="Delete this chat"
-                    className="
-                      opacity-0 translate-x-2 pointer-events-none 
-                      group-hover:opacity-100 group-hover:translate-x-0 group-hover:pointer-events-auto
-                      transition-all duration-200 ease-out 
-                      flex h-8 w-8 items-center justify-center rounded-full 
-                      bg-[rgba(239,68,68,0.1)] text-[#ef4444] 
-                      hover:bg-[#ef4444] hover:text-white 
-                      active:scale-90
-                    "
+                    className="pointer-events-none flex h-8 w-8 shrink-0 translate-x-2 items-center justify-center rounded-full bg-[rgba(239,68,68,0.1)] text-[#ef4444] opacity-0 transition-all duration-200 ease-out group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100 hover:bg-[#ef4444] hover:text-white active:scale-90"
                   >
                     <Trash2 size={15} />
                   </button>
 
-                  <div className="max-w-[80%] rounded-2xl rounded-tr-sm border border-[#2a303b] bg-[#1e232c] px-5 py-3.5 shadow-sm transition-colors group-hover:border-[#3a414e]">
-                    <p className="text-[15px] leading-relaxed text-[#e6e4dd]">
+                  <div className="max-w-[85%] rounded-2xl rounded-tr-sm border border-[#2a303b] bg-[#1e232c] px-4 py-3 shadow-sm transition-colors group-hover:border-[#3a414e] md:max-w-[80%] md:px-5 md:py-3.5">
+                    <p className="text-[14px] leading-relaxed text-[#e6e4dd] md:text-[15px]">
                       {chat.userQuery}
                     </p>
                   </div>
                 </div>
 
                 {/* ===== AI Response ===== */}
-                <div className="flex gap-3">
+                <div className="flex gap-2 md:gap-3">
                   <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[#d7a63b]">
-                    <Sparkles size={20} />
+                    <Sparkles size={18} className="md:size-20" />
                   </div>
-                  <div className="min-w-0 flex-1 max-w-[85%]">
-                    {/* Typing Indicator */}
+                  <div className="min-w-0 flex-1 max-w-[90%] md:max-w-[85%]">
                     {!chat.aiResponse ? (
-                      <div className="flex w-fit items-center gap-1.5 rounded-[3px_14px_14px_14px] bg-[#ede7d8] px-5 py-4">
+                      <div className="flex w-fit items-center gap-1.5 rounded-[3px_14px_14px_14px] bg-[#ede7d8] px-4 py-3 md:px-5 md:py-4">
                         <span
                           className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#75695a]"
                           style={{ animationDelay: "0ms" }}
@@ -368,16 +329,14 @@ function ChatAslAI({ setSelectedNoteId }) {
                       </div>
                     ) : (
                       <>
-                        {/* Text Answer */}
-                        <div className="rounded-[3px_14px_14px_14px] bg-[#ede7d8] px-5 py-4 shadow-[0_10px_26px_-14px_rgba(0,0,0,0.5)]">
-                          <p className="whitespace-pre-wrap font-['Inter',sans-serif] text-[15px] leading-[1.75] text-[#28241f]">
+                        <div className="rounded-[3px_14px_14px_14px] bg-[#ede7d8] px-4 py-3 shadow-[0_10px_26px_-14px_rgba(0,0,0,0.5)] md:px-5 md:py-4">
+                          <p className="whitespace-pre-wrap font-['Inter',sans-serif] text-[14px] leading-[1.75] text-[#28241f] md:text-[15px]">
                             {chat.aiResponse}
                           </p>
 
-                          {/* Suggested Actions (Yes/No) */}
                           {chat.aiResponse.includes("(Yes/No)") &&
                             !chat.actionTriggered && (
-                              <div className="mt-4 flex items-center gap-3 border-t border-[rgba(0,0,0,0.1)] pt-3">
+                              <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-[rgba(0,0,0,0.1)] pt-3">
                                 <button
                                   onClick={() => {
                                     setQuestion("Yes, please do it.");
@@ -400,7 +359,6 @@ function ChatAslAI({ setSelectedNoteId }) {
                             )}
                         </div>
 
-                        {/* Action Badges Wrapper */}
                         {(chat.actionTriggered ||
                           (chat.actionTool && chat.actionTool.length > 0)) && (
                           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -426,11 +384,10 @@ function ChatAslAI({ setSelectedNoteId }) {
                           </div>
                         )}
 
-                        {/* Note Sources Array */}
                         {chat.source && chat.source.length > 0 && (
                           <div className="mt-4">
-                            <details className="group rounded-xl border border-[#2a303b] bg-[#171b22] overflow-hidden transition-all">
-                              <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 font-['IBM_Plex_Mono',monospace] text-[10.5px] font-medium uppercase tracking-[0.5px] text-[#9297a1] hover:text-[#e6e4dd] hover:bg-[#1e232c] transition-colors">
+                            <details className="group overflow-hidden rounded-xl border border-[#2a303b] bg-[#171b22] transition-all">
+                              <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 font-['IBM_Plex_Mono',monospace] text-[10.5px] font-medium uppercase tracking-[0.5px] text-[#9297a1] transition-colors hover:bg-[#1e232c] hover:text-[#e6e4dd]">
                                 <span className="flex items-center gap-2">
                                   <FileText size={16} />
                                   Sources ({chat.source.length})
@@ -452,14 +409,14 @@ function ChatAslAI({ setSelectedNoteId }) {
                                   </svg>
                                 </span>
                               </summary>
-                              <div className="space-y-3 border-t border-[#2a303b] bg-[#12151a] p-4">
+                              <div className="space-y-3 border-t border-[#2a303b] bg-[#12151a] p-3 md:p-4">
                                 {chat.source.map((item) => (
                                   <div
                                     key={item._id}
-                                    className="rounded-lg border border-[#2a303b] bg-[#1e232c] p-3.5 transition-colors hover:border-[#565c66]"
+                                    className="rounded-lg border border-[#2a303b] bg-[#1e232c] p-3 transition-colors hover:border-[#565c66] md:p-3.5"
                                   >
-                                    <div className="flex items-center justify-between gap-3">
-                                      <h4 className="truncate font-['Fraunces',serif] text-sm font-medium text-[#e6e4dd]">
+                                    <div className="flex flex-wrap items-center justify-between gap-3">
+                                      <h4 className="max-w-[70%] truncate font-['Fraunces',serif] text-sm font-medium text-[#e6e4dd]">
                                         {item.title}
                                       </h4>
                                       <span className="shrink-0 rounded-full bg-[rgba(215,166,59,0.14)] px-2.5 py-0.5 font-['IBM_Plex_Mono',monospace] text-[10px] text-[#d7a63b]">
@@ -470,7 +427,7 @@ function ChatAslAI({ setSelectedNoteId }) {
                                       {item.text}
                                     </p>
                                     <button
-                                      className="mt-3 w-fit rounded-md border border-[#d7a63b] text-[#d7a63b] bg-transparent hover:bg-[rgba(215,166,59,0.1)] px-4 py-1.5 text-[11px] font-semibold transition-all active:scale-95"
+                                      className="mt-3 w-fit rounded-md border border-[#d7a63b] bg-transparent px-4 py-1.5 text-[11px] font-semibold text-[#d7a63b] transition-all hover:bg-[rgba(215,166,59,0.1)] active:scale-95"
                                       onClick={() =>
                                         setSelectedNoteId(item._id)
                                       }
@@ -494,7 +451,7 @@ function ChatAslAI({ setSelectedNoteId }) {
       </div>
 
       {/* ===== INPUT AREA ===== */}
-      <div className="flex-shrink-0 border-t border-[#2a303b] bg-[#12151a] px-6 py-4 z-10">
+      <div className="z-10 flex-shrink-0 border-t border-[#2a303b] bg-[#12151a] px-4 py-3 md:px-6 md:py-4">
         <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-xl border border-[#2a303b] bg-[#1e232c] p-2 transition-all focus-within:border-[#7a818e] focus-within:ring-1 focus-within:ring-[#7a818e]">
           <textarea
             value={question}
@@ -517,7 +474,7 @@ function ChatAslAI({ setSelectedNoteId }) {
               onClick={startListening}
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${
                 isListening
-                  ? "bg-[rgba(215,166,59,0.2)] text-[#d7a63b] animate-pulse"
+                  ? "animate-pulse bg-[rgba(215,166,59,0.2)] text-[#d7a63b]"
                   : "text-[#565c66] hover:text-[#e6e4dd]"
               }`}
               title="Ask by voice"
@@ -535,7 +492,7 @@ function ChatAslAI({ setSelectedNoteId }) {
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 ml-0.5"
+              className="ml-0.5 h-4 w-4"
             >
               <path
                 d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"
@@ -547,7 +504,7 @@ function ChatAslAI({ setSelectedNoteId }) {
             </svg>
           </button>
         </div>
-        <p className="mt-2 text-center font-['IBM_Plex_Mono',monospace] text-[10.5px] tracking-[0.3px] text-[#565c66]">
+        <p className="mt-2 text-center font-['IBM_Plex_Mono',monospace] text-[10px] tracking-[0.3px] text-[#565c66] md:text-[10.5px]">
           AI can read your notes and perform actions. Press Enter to send, Shift
           + Enter for new line.
         </p>
@@ -556,4 +513,4 @@ function ChatAslAI({ setSelectedNoteId }) {
   );
 }
 
-export default ChatAslAI;
+export default ChatAskAI;

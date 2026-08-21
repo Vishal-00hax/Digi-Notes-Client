@@ -32,10 +32,10 @@ function NavBar() {
   };
 
   return (
-    <nav className="relative z-10 flex items-center justify-between border-b border-[#2a303b] bg-[#171b22] px-6 py-4">
+    <nav className="relative z-10 flex items-center justify-between border-b border-[#2a303b] bg-[#171b22] px-4 py-3 md:px-6 md:py-4">
       <div className="flex items-center gap-2.5">
         <div className="flex h-[28px] w-[28px] items-center justify-center text-[#d7a63b]">
-          <Pencil />
+          <Pencil size={18} />
         </div>
         <Link to={"/app"}>
           <span className="font-['Fraunces',serif] text-lg font-semibold tracking-[0.2px] text-[#e6e4dd]">
@@ -44,7 +44,7 @@ function NavBar() {
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 md:gap-4">
         <span className="hidden text-sm text-[#9297a1] sm:inline">
           Hi, <span className="text-[#e6e4dd]">{user?.full_name}</span>
         </span>
@@ -52,7 +52,7 @@ function NavBar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="rounded-lg border border-[#2a303b] bg-[#1e232c] px-4 py-2 text-sm text-[#e6e4dd] transition-all hover:bg-[#262c37] active:translate-y-[1px]"
+          className="rounded-lg border border-[#2a303b] bg-[#1e232c] px-3 py-1.5 text-sm text-[#e6e4dd] transition-all hover:bg-[#262c37] active:translate-y-[1px] md:px-4 md:py-2"
         >
           Logout
         </button>

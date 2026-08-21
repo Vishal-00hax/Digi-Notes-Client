@@ -25,9 +25,6 @@ function NotesContentForm({ data, onChange }) {
     el.style.height = `${el.scrollHeight}px`;
   };
 
-  // Resize whenever the note's text actually changes — covers initial
-  // load, switching between notes, and real-time sync updates, not just
-  // local typing (which the onChange handler already covers).
   useLayoutEffect(() => {
     resizeTextarea();
   }, [data?.text, data?._id]);
@@ -90,8 +87,8 @@ function NotesContentForm({ data, onChange }) {
       {/* Paper card — vintage aged parchment, torn top & bottom, slight tilt */}
       <div className="relative mx-auto max-w-[720px] rotate-[-0.4deg]">
         {/* Paperclip pinned at the corner */}
-        <div className="absolute -left-3 -top-3 z-10 rotate-[-28deg] text-[#9a9a9a] drop-shadow-[0_2px_2px_rgba(0,0,0,0.35)]">
-          <Paperclip className="h-9 w-9" strokeWidth={1.6} />
+        <div className="absolute -left-2 -top-2 z-10 hidden rotate-[-28deg] text-[#9a9a9a] drop-shadow-[0_2px_2px_rgba(0,0,0,0.35)] sm:-left-3 sm:-top-3 sm:block">
+          <Paperclip className="h-7 w-7 sm:h-9 sm:w-9" strokeWidth={1.6} />
         </div>
 
         {/* Torn top edge */}
@@ -133,11 +130,11 @@ function NotesContentForm({ data, onChange }) {
             }}
           />
 
-          <div className="relative px-[52px] pb-[52px] pt-[30px]">
-            <div className="mb-5 flex items-center justify-between">
+          <div className="relative px-6 py-6 md:px-[52px] md:pb-[52px] md:pt-[30px]">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div className="inline-flex items-center gap-1.5 rounded-[20px] bg-[rgba(58,44,31,0.08)] px-[9px] py-1 font-['IBM_Plex_Mono',monospace] text-[10.5px] uppercase tracking-[0.5px] text-[#7a6448]">
                 <span className="h-[6px] w-[6px] rounded-full bg-[#4fa88f]" />
-                Note : Save the document before leaving the application.
+                Note : Save the document before leaving.
               </div>
               <div className="flex gap-1.5">
                 <button
@@ -166,7 +163,7 @@ function NotesContentForm({ data, onChange }) {
               value={data?.title || ""}
               onChange={(e) => onChange({ title: e.target.value })}
               placeholder="Untitled note"
-              className={`w-full bg-transparent font-['Fraunces',serif] text-[32px] font-semibold leading-[1.25] tracking-[-0.2px] text-[#3a2c1f] outline-none placeholder:text-[#7a6448]/60 ${alignClass}`}
+              className={`w-full bg-transparent font-['Fraunces',serif] text-2xl font-semibold leading-[1.25] tracking-[-0.2px] text-[#3a2c1f] outline-none placeholder:text-[#7a6448]/60 md:text-[32px] ${alignClass}`}
             />
 
             <svg
@@ -265,7 +262,7 @@ function NotesContentForm({ data, onChange }) {
               }}
               placeholder="Start writing…"
               rows={1}
-              className={`w-full resize-none overflow-hidden bg-transparent font-['Inter',sans-serif] text-[15.5px] leading-[1.75] text-[#3a2c1f] outline-none placeholder:text-[#7a6448]/60 ${alignClass} ${isBold ? "font-bold" : "font-normal"}`}
+              className={`w-full resize-none overflow-hidden bg-transparent font-['Inter',sans-serif] text-[15px] leading-[1.75] text-[#3a2c1f] outline-none placeholder:text-[#7a6448]/60 md:text-[15.5px] ${alignClass} ${isBold ? "font-bold" : "font-normal"}`}
               style={{ minHeight: 120 }}
             />
           </div>

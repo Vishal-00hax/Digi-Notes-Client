@@ -39,7 +39,7 @@ export const useVoiceInput = (onResult) => {
       } else if (event.error === "network") {
         toast.error("Network error. Please check your internet connection.");
       } else if (event.error === "aborted") {
-        // ✅ Yeh tab hota hai jab user khud stop kar de — koi error dikhane ki zaroorat nahi
+        //  Yeh tab hota hai jab user khud stop kar de — koi error dikhane ki zaroorat nahi
       } else {
         toast.error("Voice recognition failed. Please try again.");
       }
