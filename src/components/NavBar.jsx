@@ -10,26 +10,9 @@ import { Pencil } from "lucide-react";
 
 function NavBar() {
   const user = useSelector((store) => store.user);
+  console.log("User from NavBar", user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try {
-      const response = await api.post(
-        "/auth/logout",
-        {},
-        { withCredentials: true },
-      );
-      dispatch(removeUser());
-      disconnectSocket();
-      navigate("/");
-      toast.success(response.data.message || "Logout Successful");
-    } catch (err) {
-      const errText =
-        err.response?.data?.message || err.message || "Something went wrong";
-      toast.error(errText);
-    }
-  };
 
   return (
     <nav className="relative z-10 flex items-center justify-between border-b border-[#2a303b] bg-[#171b22] px-4 py-3 md:px-6 md:py-4">
@@ -48,14 +31,13 @@ function NavBar() {
         <span className="hidden text-sm text-[#9297a1] sm:inline">
           Hi, <span className="text-[#e6e4dd]">{user?.full_name}</span>
         </span>
-
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="rounded-lg border border-[#2a303b] bg-[#1e232c] px-3 py-1.5 text-sm text-[#e6e4dd] transition-all hover:bg-[#262c37] active:translate-y-[1px] md:px-4 md:py-2"
+        <Link
+          to="/app/profile"
+          className="group inline-flex items-center gap-2 rounded-lg border border-[#2a303b] bg-[#1e232c] px-3.5 py-2 text-sm font-medium text-[#e6e4dd] shadow-[0_1px_0_rgba(0,0,0,0.12)] transition-all duration-150 hover:border-[#d7a63b]/40 hover:bg-[#262c37] hover:text-[#d7a63b] active:translate-y-[1px] md:px-4 md:py-2.5"
         >
-          Logout
-        </button>
+          <span className="h-1.5 w-1.5 rounded-full bg-[#d7a63b] opacity-70 transition-opacity group-hover:opacity-100" />
+          Profile
+        </Link>
       </div>
     </nav>
   );

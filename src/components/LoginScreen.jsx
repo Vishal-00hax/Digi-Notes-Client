@@ -58,7 +58,7 @@ function LoginScreen() {
         email: formData.email,
         password: formData.password,
       });
-      dispatch(addUser(response.data.user));
+      dispatch(addUser(response.data));
       navigate("/app");
       toast.success("Login Successfull");
     } catch (err) {
