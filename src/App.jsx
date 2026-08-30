@@ -12,10 +12,13 @@ import api from "../utils/axios";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { useEffect } from "react";
+import { removeUser } from "../utils/userSlice";
+import { connectSocket, getSocket, disconnectSocket } from "../utils/socket";
 
 function App() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const user = useSelector((store) => store.user);
 
   const getUser = async () => {
@@ -33,6 +36,32 @@ function App() {
   useEffect(() => {
     getUser();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const socket = connectSocket();
+
+    const handleForceLogout = async () => {
+      try {
+        await api.post("/auth/logout", {}, { withCredentials: true });
+      } catch (err) {
+        // API fail ho sakti hai (jaise cookies already clear ho chuki ho),
+        // fir bhi local cleanup zaroor hona chahiye
+      } finally {
+        dispatch(removeUser());
+        disconnectSocket();
+        navigate("/login");
+      }
+    };
+
+    socket.on("force-logout", handleForceLogout);
+
+    return () => {
+      socket.off("force-logout", handleForceLogout);
+    };
+  }, [user]);
+
   return (
     <>
       <Toaster />
@@ -42,7 +71,7 @@ function App() {
         <Route path="app" element={<Body />}>
           <Route index element={<DashboardScreen />} />
           <Route path="upload" element={<UploadFileNotes />} />
-          <Route path="profile" element={<ProfileScreen />} />
+          <Route path="profile/:userId" element={<ProfileScreen />} />
         </Route>
         <Route path="login" element={<LoginScreen />} />
       </Routes>

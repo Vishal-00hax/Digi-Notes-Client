@@ -3,10 +3,17 @@ import { useState, useEffect } from "react";
 import api from "../../utils/axios";
 import { useLogout } from "../../hooks/useLogout";
 import { User, Mail, Monitor, LogOut } from "lucide-react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
+import { useDispatch } from "react-redux";
+
+import { removeUser } from "../../utils/userSlice";
 
 function ProfileScreen() {
   const [user, setUser] = useState([]);
   const [sessions, setSession] = useState("");
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const getUser = async () => {
     const response = await api.get("/auth/profile");
@@ -15,6 +22,18 @@ function ProfileScreen() {
   };
 
   const handleLogout = useLogout();
+
+  const handleLogoutAllSessions = async () => {
+    try {
+      const response = await api.post("/auth/all-session-logout");
+      toast.success(response.data.message);
+      dispatch(removeUser());
+
+      navigate("/");
+    } catch (err) {
+      toast.error(err.message || "Something went wrong");
+    }
+  };
 
   useEffect(() => {
     getUser();
@@ -119,37 +138,44 @@ function ProfileScreen() {
         </section>{" "}
         {/* Sessions card */}{" "}
         <section className="mt-4 overflow-hidden rounded-xl border border-[#2a303b] bg-[#171b22] shadow-[0_12px_35px_rgba(0,0,0,0.12)] sm:mt-5">
-          {" "}
-          <div className="flex flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-7">
-            {" "}
-            <div className="flex min-w-0 items-center gap-3">
-              {" "}
+          <div className="flex flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-7 lg:px-8">
+            {/* Left: icon + title/description */}
+            <div className="flex min-w-0 items-start gap-3 sm:items-center">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#1e232c] text-[#4fa88f]">
-                {" "}
-                <Monitor size={19} strokeWidth={1.8} />{" "}
-              </div>{" "}
+                <Monitor size={19} strokeWidth={1.8} />
+              </div>
               <div className="min-w-0">
-                {" "}
                 <h2 className="font-['Fraunces',serif] text-base font-medium text-[#e6e4dd] sm:text-lg">
-                  {" "}
-                  Active sessions{" "}
-                </h2>{" "}
-                <p className="mt-0.5 text-xs text-[#565c66]">
-                  {" "}
-                  Devices currently signed in to your account{" "}
-                </p>{" "}
-              </div>{" "}
-            </div>{" "}
-            <div className="flex w-fit items-center gap-2 rounded-lg border border-[#2a303b] bg-[#1e232c] px-3 py-2">
-              {" "}
-              <span className="h-1.5 w-1.5 rounded-full bg-[#4fa88f]" />{" "}
-              <span className="font-['IBM_Plex_Mono',monospace] text-[11px] uppercase tracking-[0.4px] text-[#9297a1]">
-                {" "}
-                {sessions} active{" "}
-              </span>{" "}
-            </div>{" "}
-          </div>{" "}
-        </section>{" "}
+                  Active sessions
+                </h2>
+                <p className="mt-0.5 truncate text-xs text-[#565c66] sm:whitespace-normal">
+                  Devices currently signed in to your account
+                </p>
+              </div>
+            </div>
+
+            {/* Right: session badge + logout button */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+              <div className="flex w-fit items-center gap-2 self-start rounded-lg border border-[#2a303b] bg-[#1e232c] px-3 py-2 sm:self-auto">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#4fa88f]" />
+                <span className="font-['IBM_Plex_Mono',monospace] text-[11px] uppercase tracking-[0.4px] text-[#9297a1]">
+                  {sessions} active
+                </span>
+              </div>
+
+              {sessions > 1 && (
+                <button
+                  type="button"
+                  onClick={handleLogoutAllSessions}
+                  className="flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-[#2a303b] bg-[#1e232c] px-4 py-2.5 text-sm font-medium text-[#e6e4dd] transition-all duration-150 hover:border-[#a1493a] hover:bg-[#262c37] hover:text-[#e6e4dd] active:translate-y-[1px] sm:w-auto"
+                >
+                  <LogOut size={16} />
+                  Logout From All Devices
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
         {/* Account actions */}{" "}
         <section className="mt-4 overflow-hidden rounded-xl border border-[#2a303b] bg-[#171b22] shadow-[0_12px_35px_rgba(0,0,0,0.12)] sm:mt-5">
           {" "}

@@ -27,18 +27,31 @@ function NavBar() {
         </Link>
       </div>
 
-      <div className="flex items-center gap-3 md:gap-4">
-        <span className="hidden text-sm text-[#9297a1] sm:inline">
-          Hi, <span className="text-[#e6e4dd]">{user?.full_name}</span>
-        </span>
-        <Link
-          to="/app/profile"
-          className="group inline-flex items-center gap-2 rounded-lg border border-[#2a303b] bg-[#1e232c] px-3.5 py-2 text-sm font-medium text-[#e6e4dd] shadow-[0_1px_0_rgba(0,0,0,0.12)] transition-all duration-150 hover:border-[#d7a63b]/40 hover:bg-[#262c37] hover:text-[#d7a63b] active:translate-y-[1px] md:px-4 md:py-2.5"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-[#d7a63b] opacity-70 transition-opacity group-hover:opacity-100" />
-          Profile
+      {user ? (
+        <div className="flex items-center gap-3 md:gap-4">
+          <span className="hidden text-sm text-[#9297a1] sm:inline">
+            Hi, <span className="text-[#e6e4dd]">{user.full_name}</span>
+          </span>
+
+          {/* ✅ Only render the Profile link if user._id exists */}
+          {user._id ? (
+            <Link
+              to={`/app/profile/${user._id}`}
+              className="group inline-flex items-center gap-2 rounded-lg border border-[#2a303b] bg-[#1e232c] px-3.5 py-2 text-sm font-medium text-[#e6e4dd] shadow-[0_1px_0_rgba(0,0,0,0.12)] transition-all duration-150 hover:border-[#d7a63b]/40 hover:bg-[#262c37] hover:text-[#d7a63b] active:translate-y-[1px] md:px-4 md:py-2.5"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-[#d7a63b] opacity-70 transition-opacity group-hover:opacity-100" />
+              Profile
+            </Link>
+          ) : (
+            // Optional fallback when user exists but _id is missing (e.g., loading state)
+            <span className="text-sm text-[#9297a1]">Loading profile…</span>
+          )}
+        </div>
+      ) : (
+        <Link to="/login" className="...">
+          Login
         </Link>
-      </div>
+      )}
     </nav>
   );
 }
