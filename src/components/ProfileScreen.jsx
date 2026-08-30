@@ -159,7 +159,7 @@ function ProfileScreen() {
               <div className="flex w-fit items-center gap-2 self-start rounded-lg border border-[#2a303b] bg-[#1e232c] px-3 py-2 sm:self-auto">
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#4fa88f]" />
                 <span className="font-['IBM_Plex_Mono',monospace] text-[11px] uppercase tracking-[0.4px] text-[#9297a1]">
-                  {sessions} active
+                  {sessions || 1} active
                 </span>
               </div>
 
