@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import EditNotesForm from "./EditNotesForm";
 import NotesContentForm from "./NotesContentForm";
 import { useNotesSync } from "../../hooks/useNotesSync";
-import ChatAslAI from "./ChatAslAI";
+import ChatAskAI from "./ChatAskAI";
 import {
   Plus,
   BotMessageSquare,
@@ -332,7 +332,7 @@ function DashboardScreen() {
             </div>
           </div>
         ) : (
-          <ChatAslAI
+          <ChatAskAI
             setSelectedNoteId={(id) => dispatch(setSelectedNoteId(id))}
           />
         )}
