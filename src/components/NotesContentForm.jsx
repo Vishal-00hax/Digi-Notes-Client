@@ -12,11 +12,14 @@ import {
   Bold,
   Paperclip,
 } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { noteUpdated } from "../../utils/notesSlice";
 
 function NotesContentForm({ data, onChange }) {
   const textareaRef = useRef(null);
   const [align, setAlign] = useState("left");
   const [isBold, setIsBold] = useState(false);
+  const dispatch = useDispatch();
 
   const resizeTextarea = () => {
     const el = textareaRef.current;
@@ -31,8 +34,14 @@ function NotesContentForm({ data, onChange }) {
 
   const handleSaveNotes = async (notesId, title, text) => {
     try {
-      await api.patch("/notes/update", { notesId, title, text });
+      const response = await api.patch("/notes/update", {
+        notesId,
+        title,
+        text,
+      });
       toast.success("Note Saved");
+      const updatedNote = response.data.data;
+      dispatch(noteUpdated(updatedNote));
     } catch (err) {
       const errText =
         err.response?.data?.message || err.message || "Something went wrong";

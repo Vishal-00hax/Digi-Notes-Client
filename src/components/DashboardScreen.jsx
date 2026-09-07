@@ -25,6 +25,9 @@ import {
   setSelectedNote,
   setLoadingNote,
   patchSelectedNote,
+  noteCreated,
+  noteUpdated,
+  noteDeleted,
 } from "../../utils/notesSlice";
 import { useVoiceInput } from "../../hooks/useVoiceInput";
 
@@ -84,8 +87,22 @@ function DashboardScreen() {
     try {
       const response = await api.post("/notes/create", { title: "", text: "" });
       toast.success("New Note Created");
-      if (response.data?.note?._id) {
-        dispatch(setSelectedNoteId(response.data.note._id));
+
+      // Since the backend only sends the string ID, we capture it here
+      const noteId = response.data.data;
+
+      if (noteId && typeof noteId === "string") {
+        // Construct the expected object format for Redux manually
+        const newNote = {
+          _id: noteId,
+          title: "New-Note",
+          text: "Empty note",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        dispatch(noteCreated(newNote));
+        dispatch(setSelectedNoteId(noteId));
         setIsSidebarOpen(false);
       }
     } catch (err) {
@@ -97,6 +114,7 @@ function DashboardScreen() {
     try {
       await api.delete(`/notes/delete/${notesId}`);
       toast.success("Note Deleted");
+      dispatch(noteDeleted(notesId));
       if (selectedNoteId === notesId) dispatch(setSelectedNoteId(null));
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");

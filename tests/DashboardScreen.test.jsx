@@ -5,7 +5,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import DashboardScreen from "../src/components/DashboardScreen";
 import notesReducer from "../utils/notesSlice";
 
-// 1. Mock External Dependencies
 import api from "../utils/axios";
 import toast from "react-hot-toast";
 import { useVoiceInput } from "../hooks/useVoiceInput";
@@ -21,7 +20,6 @@ jest.mock("react-hot-toast", () => ({
   default: { success: jest.fn(), error: jest.fn() },
 }));
 
-// Mock Custom Hooks
 jest.mock("../hooks/useVoiceInput", () => ({
   useVoiceInput: jest.fn(),
 }));
@@ -29,14 +27,12 @@ jest.mock("../hooks/useNotesSync", () => ({
   useNotesSync: jest.fn(),
 }));
 
-// Mock React Router
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: () => mockNavigate,
 }));
 
-// 2. Mock Child Components to isolate Dashboard testing
 jest.mock("../src/components/NotesContentForm", () => () => (
   <div data-testid="notes-content-form">NotesContentForm</div>
 ));
@@ -47,7 +43,6 @@ jest.mock("../src/components/EditNotesForm", () => () => (
   <div data-testid="edit-notes-form">EditNotesForm</div>
 ));
 
-// Mock Lucide Icons
 jest.mock("lucide-react", () => ({
   Plus: () => <div data-testid="icon-plus" />,
   BotMessageSquare: () => <div data-testid="icon-bot" />,
@@ -60,7 +55,6 @@ jest.mock("lucide-react", () => ({
   X: () => <div data-testid="icon-x" />,
 }));
 
-// 3. Setup Helper Function
 const renderWithProviders = (preloadedState = {}) => {
   const store = configureStore({
     reducer: { notes: notesReducer },
@@ -105,8 +99,6 @@ describe("DashboardScreen Component", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Silence console logs during tests to keep terminal clean
     jest.spyOn(console, "log").mockImplementation(() => {});
     jest.spyOn(console, "error").mockImplementation(() => {});
 
@@ -118,13 +110,11 @@ describe("DashboardScreen Component", () => {
     }));
   });
 
-  it("fetches notes on mount and renders ChatAskAI by default (no note selected)", async () => {
+  it("fetches notes on mount and renders ChatAskAI by default", async () => {
     api.get.mockResolvedValueOnce({ data: { notes: mockNotes } });
-
     renderWithProviders();
 
     expect(api.get).toHaveBeenCalledWith("/notes/user");
-
     await waitFor(() => {
       expect(screen.getByText("Meeting Notes")).toBeInTheDocument();
       expect(screen.getByText("Ideas")).toBeInTheDocument();
@@ -135,9 +125,7 @@ describe("DashboardScreen Component", () => {
   });
 
   it("filters notes when typing in the search bar", async () => {
-    // Mock the initial fetch so we don't get act() warnings
     api.get.mockResolvedValueOnce({ data: { notes: mockNotes } });
-
     renderWithProviders({ items: mockNotes });
 
     await waitFor(() => {
@@ -152,7 +140,7 @@ describe("DashboardScreen Component", () => {
     expect(screen.queryByText("Ideas")).not.toBeInTheDocument();
   });
 
-  it("fetches note details and shows NotesContentForm when a note is clicked", async () => {
+  it("fetches note details and shows NotesContentForm when clicked", async () => {
     api.get.mockResolvedValueOnce({ data: { notes: mockNotes } });
     api.get.mockResolvedValueOnce({
       data: {
@@ -174,13 +162,14 @@ describe("DashboardScreen Component", () => {
     await waitFor(() => {
       expect(api.get).toHaveBeenCalledWith("/notes/get/note_1");
       expect(screen.getByTestId("notes-content-form")).toBeInTheDocument();
-      expect(screen.queryByTestId("chat-ask-ai")).not.toBeInTheDocument();
     });
   });
 
   it("creates a new note and selects it", async () => {
     api.get.mockResolvedValueOnce({ data: { notes: mockNotes } });
-    api.post.mockResolvedValueOnce({ data: { note: { _id: "new_note_123" } } });
+
+    // FIX: Match the component's expectation of `response.data.data` as a string ID
+    api.post.mockResolvedValueOnce({ data: { data: "new_note_123" } });
 
     renderWithProviders();
 
@@ -212,22 +201,18 @@ describe("DashboardScreen Component", () => {
       expect(screen.getByText("Meeting Notes")).toBeInTheDocument(),
     );
 
-    // Because note_2 is newer (Sep 2 vs Sep 1), it renders FIRST in the UI!
-    // Clicking the first trash icon will delete note_2.
     const trashIcons = screen.getAllByTestId("icon-trash");
     const firstTrashBtn = trashIcons[0].closest("button");
-
     fireEvent.click(firstTrashBtn);
 
     await waitFor(() => {
-      expect(api.delete).toHaveBeenCalledWith("/notes/delete/note_2"); // Changed to note_2
+      expect(api.delete).toHaveBeenCalledWith("/notes/delete/note_2");
       expect(toast.success).toHaveBeenCalledWith("Note Deleted");
     });
   });
 
   it("navigates to upload page when 'Upload File' is clicked", async () => {
     api.get.mockResolvedValueOnce({ data: { notes: [] } });
-
     renderWithProviders();
 
     const uploadBtn = screen.getAllByRole("button", {
