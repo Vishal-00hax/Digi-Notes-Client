@@ -1,4 +1,3 @@
-// utils/socket.js
 import { io } from "socket.io-client";
 import api from "./axios";
 let socket = null;
